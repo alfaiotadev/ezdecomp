@@ -72,9 +72,8 @@ bool Score::operator!=(const Score& other) const {
     return m_total != other.m_total || m_value != other.m_value;
 }
 Score Score::operator+(const Score& other) {
-    Score result;
-    result.m_value += other.m_value;
-    result.m_total += other.m_total;
+    Score result = *this;
+    result += other;
     return result;
 }
 Score Score::operator*(int multiplier) {
