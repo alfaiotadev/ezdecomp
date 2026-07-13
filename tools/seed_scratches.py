@@ -95,6 +95,25 @@ def demangle(symbol):
 ANSI = re.compile(r"\x1b\[[0-9;?]*[a-zA-Z]")
 
 
+def ensure_libclang():
+    """decompme uses libclang to move the target function into the scratch's source
+    tab (leaving only deps in context) — a much cleaner starting point. Without it
+    the function stays in context and the source tab is empty. Point LIBCLANG_PATH
+    at any installed libclang if the caller didn't. (Install: apt-get install libclang1-18.)"""
+    import glob
+    if os.environ.get("LIBCLANG_PATH"):
+        return True
+    for pat in ("/usr/lib/*/libclang*.so*", "/usr/lib/llvm-*/lib/libclang*.so*",
+                "/usr/lib/libclang*.so*", "/usr/local/lib/libclang*.so*"):
+        hits = glob.glob(pat)
+        if hits:
+            os.environ["LIBCLANG_PATH"] = os.path.dirname(hits[0])
+            return True
+    print("WARNING: libclang not found — scratches will have the function in context, "
+          "not the source tab (install libclang1-18 for a cleaner layout)")
+    return False
+
+
 def make_scratch(symbol, u_context_source, timeout=120):
     """Run tools/decompme in a PTY (its upload confirmation REQUIRES a TTY —
     piped stdin fails with 'input device is not a TTY'), auto-answer the prompt,
@@ -170,6 +189,7 @@ def main():
         sys.exit("set GITHUB_TOKEN (the alfaiotadev PAT)")
     if not os.path.exists(DECOMPME):
         sys.exit(f"{DECOMPME} not found — run from /workspace in the devcontainer (needs the binary)")
+    ensure_libclang()
     qualities = set(q.strip() for q in args.quality.split(",") if q.strip())
     if "U" in qualities and not args.u_context_source:
         sys.exit("seeding U functions needs --u-context-source <a .cpp with the right includes> "
