@@ -2,20 +2,29 @@
 """
 seed_scratches.py — populate the public issue board with claimable decomp tasks.
 
-For each unmatched (`U`) function it creates a public decomp.me scratch (target
-asm + preprocessed context + exact clang-3.9.1 flags baked in, via tools/decompme)
-and opens a GitHub issue linking it, labelled `open` / `good-first-function`. A
+For each selected function it creates a public decomp.me scratch (target asm +
+preprocessed context + exact clang-3.9.1 flags baked in, via tools/decompme) and
+opens a GitHub issue linking it, labelled `open` / `good-first-function`. A
 contributor then iterates the scratch in the browser with any LLM — no binary,
 no toolchain — until the diff reads 100%, and links it back on a PR.
 
-MAINTAINER-ONLY: must run where the game binary is staged (the devcontainer's
-/workspace), because tools/decompme reads the target bytes to build each scratch.
-The public repo, the toolchain, and the scratches never need the binary — only
-this seeding step does.
+IMPORTANT — what tools/decompme can seed:
+  tools/decompme deduces a function's source file + context from the DECOMP ELF's
+  debug info (i.e. the function must be COMPILED IN). So it works out of the box
+  for implemented functions:
+    * `m` / `M` (implemented but not byte-matching) — the natural "help make this
+      match" task. This is the DEFAULT seed set.
+    * `O` (already matching) — only useful for demos.
+  It CANNOT deduce context for an untouched `U` function (not in the build) — that
+  needs an explicit `-s <context source file>` (see --u-context-source, experimental).
+
+MAINTAINER-ONLY: run where the game binary is staged (the devcontainer /workspace),
+because tools/decompme reads the target bytes. Contributors need no binary.
 
 Usage (inside the container, from /workspace):
     GITHUB_TOKEN=<alfaiotadev PAT> python3 tools/seed_scratches.py --limit 10
-    # tune: --max-size 200  --repo alfaiotadev/ezdecomp  --dry-run
+    # options: --quality m,M  --min-size 16  --max-size 400  --repo alfaiotadev/ezdecomp  --dry-run
+    # experimental U seeding: --quality U --u-context-source src/<subsystem>/<file>.cpp
 
 Idempotent: skips any function whose symbol already appears in an existing issue.
 """
@@ -26,9 +35,9 @@ DECOMPME = "tools/decompme"
 API = "https://api.github.com"
 
 
-def eligible_functions(max_size):
-    """Small, unmatched, real functions — good starter tasks. Skips compiler
-    thunks (never standalone-matchable) and oversized/hard ones."""
+def eligible_functions(qualities, min_size, max_size):
+    """Functions matching the requested quality states and size window. Skips
+    compiler thunks (never standalone-matchable). Smallest first."""
     out = []
     with open(CSV) as f:
         next(f)  # header: Address,Quality,Size,Name
@@ -37,15 +46,15 @@ def eligible_functions(max_size):
             if len(p) < 4:
                 continue
             _, q, size, name = p[0], p[1], p[2], p[3]
-            if q != "U" or not name or name.startswith(("_ZThn", "_ZTh")):
+            if q not in qualities or not name or name.startswith(("_ZThn", "_ZTh")):
                 continue
             try:
                 b = int(size)
             except ValueError:
                 continue
-            if 0 < b <= max_size:
+            if min_size <= b <= max_size:
                 out.append((name, b))
-    out.sort(key=lambda t: t[1])  # smallest first
+    out.sort(key=lambda t: t[1])
     return out
 
 
@@ -81,18 +90,21 @@ def demangle(symbol):
         return symbol
 
 
-def make_scratch(symbol):
+def make_scratch(symbol, u_context_source):
     """Run tools/decompme, auto-confirm the upload, return the scratch URL or None."""
+    cmd = [DECOMPME]
+    if u_context_source:
+        cmd += ["-s", u_context_source]
+    cmd.append(symbol)
     try:
-        r = subprocess.run([DECOMPME, symbol], input="y\n", capture_output=True, text=True, timeout=180)
+        r = subprocess.run(cmd, input="y\n", capture_output=True, text=True, timeout=180)
     except Exception as e:
-        print(f"    decompme error: {e}")
-        return None
+        return None, f"decompme error: {e}"
     m = re.search(r"Direct:\s*(https://decomp\.me/scratch/\S+)", r.stdout)
     if not m:
-        print(f"    no scratch URL in output:\n{(r.stdout + r.stderr)[-400:]}")
-        return None
-    return m.group(1).rstrip("/")
+        err = next((ln for ln in (r.stdout + r.stderr).splitlines() if "Error" in ln or "error" in ln), "")
+        return None, (err or "no scratch URL")
+    return m.group(1).rstrip("/"), None
 
 
 def issue_body(symbol, demangled, size, scratch):
@@ -109,8 +121,12 @@ def issue_body(symbol, demangled, size, scratch):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--limit", type=int, default=10, help="max functions to seed this run")
-    ap.add_argument("--max-size", type=int, default=200, help="skip functions larger than this (bytes)")
+    ap.add_argument("--limit", type=int, default=10, help="stop after this many issues created")
+    ap.add_argument("--quality", default="m,M", help="comma-separated quality states to seed (default: m,M)")
+    ap.add_argument("--min-size", type=int, default=16, help="skip functions smaller than this (bytes)")
+    ap.add_argument("--max-size", type=int, default=400, help="skip functions larger than this (bytes)")
+    ap.add_argument("--u-context-source", help="experimental: context .cpp passed to decompme -s (for --quality U)")
+    ap.add_argument("--max-attempts", type=int, default=0, help="cap decompme attempts (default: 3x limit)")
     ap.add_argument("--repo", default="alfaiotadev/ezdecomp")
     ap.add_argument("--dry-run", action="store_true", help="create scratches but do NOT open issues")
     args = ap.parse_args()
@@ -119,20 +135,29 @@ def main():
     if not token and not args.dry_run:
         sys.exit("set GITHUB_TOKEN (the alfaiotadev PAT)")
     if not os.path.exists(DECOMPME):
-        sys.exit(f"{DECOMPME} not found — run this from /workspace in the devcontainer (needs the binary)")
+        sys.exit(f"{DECOMPME} not found — run from /workspace in the devcontainer (needs the binary)")
+    qualities = set(q.strip() for q in args.quality.split(",") if q.strip())
+    if "U" in qualities and not args.u_context_source:
+        sys.exit("seeding U functions needs --u-context-source <a .cpp with the right includes> "
+                 "(decompme can't deduce context for functions not in the build)")
+    max_attempts = args.max_attempts or args.limit * 3
 
     seen = set() if args.dry_run else already_seeded(args.repo, token)
     print(f"{len(seen)} functions already on the board")
-    candidates = [(n, b) for n, b in eligible_functions(args.max_size) if n not in seen]
-    print(f"{len(candidates)} eligible U functions ≤{args.max_size}B; seeding up to {args.limit}")
+    candidates = [(n, b) for n, b in eligible_functions(qualities, args.min_size, args.max_size) if n not in seen]
+    print(f"{len(candidates)} eligible {'/'.join(sorted(qualities))} functions "
+          f"{args.min_size}-{args.max_size}B; seeding up to {args.limit} (max {max_attempts} attempts)")
 
-    made = 0
+    made = attempts = failed = 0
     for symbol, size in candidates:
-        if made >= args.limit:
+        if made >= args.limit or attempts >= max_attempts:
             break
-        print(f"[{made+1}/{args.limit}] {symbol} ({size}B)")
-        scratch = make_scratch(symbol)
+        attempts += 1
+        print(f"[{attempts}] {symbol} ({size}B)")
+        scratch, err = make_scratch(symbol, args.u_context_source)
         if not scratch:
+            failed += 1
+            print(f"    skip: {err}")
             continue
         dm = demangle(symbol)
         if args.dry_run:
@@ -146,9 +171,13 @@ def main():
             print(f"    issue #{iss['number']}  ·  {scratch}")
             made += 1
         except urllib.error.HTTPError as e:
+            failed += 1
             print(f"    issue create failed: {e.code} {e.read().decode()[:150]}")
-        time.sleep(1)  # be gentle on both APIs
-    print(f"done — seeded {made} tasks")
+        time.sleep(1)
+    print(f"done — seeded {made}, attempted {attempts}, failed {failed}")
+    if made == 0 and failed:
+        print("all attempts failed — if seeding U, decompme needs implemented functions or a valid "
+              "--u-context-source; try --quality m,M first.")
 
 
 if __name__ == "__main__":
