@@ -12,6 +12,17 @@
 
 **This repository does not contain game assets and cannot be used to play the game.**
 
+## 🎯 The real deadline
+
+Rockstar says *Grand Theft Auto VI* hits consoles on **19 October 2026** (PC port: "eventually"™️).
+So the completely serious, not-at-all-tongue-in-cheek goal is to get this decomp **fully matched
+before GTA VI ships** — so while everyone else is still waiting on the PC port, we're already
+building on native source. And if the community is *really* fast: someone spins up a proper
+modding framework, and we get, say, an **online multiplayer** feature dropped into LEGO City
+before you can even boot Vice City. 🚔🧱
+
+(Yes, this is a LEGO City Undercover decomp. Yes, we know how that sounds. Let us dream.)
+
 ## Resources
 This project requires a `main` dumped from the latest *Lego City Undercover - EU* update, v1.0.3
 (The US version 1.0.2 likely also works for decompilation, but is untested and has a different file hash).
