@@ -35,9 +35,12 @@ DECOMPME = "tools/decompme"
 API = "https://api.github.com"
 
 
-def eligible_functions(qualities, min_size, max_size):
+def eligible_functions(qualities, min_size, max_size, name_filter=None):
     """Functions matching the requested quality states and size window. Skips
-    compiler thunks (never standalone-matchable). Smallest first."""
+    compiler thunks (never standalone-matchable). Smallest first. name_filter is
+    an optional regex on the mangled symbol (use it to scope a U batch to the
+    subsystem its --u-context-source covers)."""
+    pat = re.compile(name_filter) if name_filter else None
     out = []
     with open(CSV) as f:
         next(f)  # header: Address,Quality,Size,Name
@@ -49,6 +52,8 @@ def eligible_functions(qualities, min_size, max_size):
             # skip compiler thunks and deleting destructors (D0Ev) — decompme can't
             # build a translation unit for them ("failed to get translation unit").
             if q not in qualities or not name or name.startswith(("_ZThn", "_ZTh")) or name.endswith("D0Ev"):
+                continue
+            if pat and not pat.search(name):
                 continue
             try:
                 b = int(size)
@@ -178,7 +183,8 @@ def main():
     ap.add_argument("--quality", default="m,M", help="comma-separated quality states to seed (default: m,M)")
     ap.add_argument("--min-size", type=int, default=16, help="skip functions smaller than this (bytes)")
     ap.add_argument("--max-size", type=int, default=400, help="skip functions larger than this (bytes)")
-    ap.add_argument("--u-context-source", help="experimental: context .cpp passed to decompme -s (for --quality U)")
+    ap.add_argument("--u-context-source", help="context .cpp passed to decompme -s (for --quality U; needs the patched decompme that allows U functions)")
+    ap.add_argument("--name-filter", help="regex on the mangled symbol — scope a batch (e.g. a U subsystem matching --u-context-source)")
     ap.add_argument("--max-attempts", type=int, default=0, help="cap decompme attempts (default: 3x limit)")
     ap.add_argument("--repo", default="alfaiotadev/ezdecomp")
     ap.add_argument("--dry-run", action="store_true", help="create scratches but do NOT open issues")
@@ -198,7 +204,7 @@ def main():
 
     seen = set() if args.dry_run else already_seeded(args.repo, token)
     print(f"{len(seen)} functions already on the board")
-    candidates = [(n, b) for n, b in eligible_functions(qualities, args.min_size, args.max_size) if n not in seen]
+    candidates = [(n, b) for n, b in eligible_functions(qualities, args.min_size, args.max_size, args.name_filter) if n not in seen]
     print(f"{len(candidates)} eligible {'/'.join(sorted(qualities))} functions "
           f"{args.min_size}-{args.max_size}B; seeding up to {args.limit} (max {max_attempts} attempts)")
 
