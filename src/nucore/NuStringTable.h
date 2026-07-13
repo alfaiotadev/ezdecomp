@@ -19,3 +19,4 @@ struct NuStringTable {
 
 eStringBanks NuStringTableGetBank();
 void NuStringTableSetPlatformFilter(const char* filter);
+void NuStringTableSetTypeFilter(const char* filter);
