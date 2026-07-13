@@ -4,17 +4,10 @@ class NuQuatBase;
 class NuVector3Base;
 class NuVector4Base;
 
-int NuSerialize::ms_fieldSizes[] = {
-    0, 1, 1, 1, 2, 2, 4, 4, 8, 8, 4, 1, 2, 4, 4, 16, 16, 16, 64, 4,
-    16, 16, 16, 64, 12, 16, 16, 64, 64, 4, 4, 4, 0, 0, 0, 0, 0, 16, 8, 16,
-    16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 4, 4, 8, 8,
-    4, 1, 2, 4, 4, 12, 16, 16, 64, 48, 0, 0, 0, 16,
-};
+void* (*NuSerialize::s_createFieldFuncs[41])(void);
 
-static int* s_pNuSerializeFieldSizes = NuSerialize::ms_fieldSizes;
-
-int NuSerializeGetFieldSize(NuSerialize::FieldType type) {
-    return s_pNuSerializeFieldSizes[type];
+void* NuSerializeCreateField(NuSerialize::FieldType type) {
+    return NuSerialize::s_createFieldFuncs[type]();
 }
 
 template <>
