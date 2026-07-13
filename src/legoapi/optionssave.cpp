@@ -148,13 +148,20 @@ void Options::SetAllowAnalytics(bool param1, bool param2) {
     unsigned char* ptr = &options->m_allowAnalytics;
     *ptr = param1 & 1;
 }
+class LegoSFX {
+public:
+    void SetMasterBusVolume(Options&);
+};
+
+extern LegoSFX* g_pLegoSFX __asm__("_ZN12SystemMixinsI7LegoSFXE11m_singletonE");
+
 __attribute__((noinline)) void Options::SetAudio_volume(unsigned char value) {
     Options* self = this;
     if (value > 9) {
         value = 10;
     }
     self->options->m_audioVolume = value;
-    // todo missing: LegoSFX::SetMasterBusVolume(value);
+    g_pLegoSFX->SetMasterBusVolume(*self);
 }
 __attribute__((noinline)) void Options::SetHintAudio_on(unsigned char value) {
     unsigned char flags = options->m_bitfieldFlags;
