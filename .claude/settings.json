@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|exec",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR:-${DEVIN_PROJECT_DIR:-.}}/.claude/hooks/decomp-tool-guard.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

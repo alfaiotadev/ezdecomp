@@ -1,0 +1,65 @@
+# Compile + W-state gate (GitHub Actions, public).
+#
+# PUBLIC-CI CONTRACT — runs on GitHub-hosted runners only. It NEVER sees the
+# original binary: there is no `PRIVATE_MAIN_URL` secret and no byte-match
+# verification here. Match correctness is proven out-of-band by a 100%
+# decomp.me scratch linked in the PR, and re-verified privately by the
+# maintainer's import bot before merge (see tools/bot/ and docs/CONTRIBUTING.md).
+#
+# What this gate enforces for every push / fork PR:
+#   1. No Quality=W (work-in-progress) function may enter the tree.
+#   2. The project still compiles with the pinned Clang 3.9.1 toolchain
+#      (project-only setup: toolchain is downloaded, the binary is not).
+#
+# The target is always aarch64-linux-elf (cross), so an x86_64 GitHub-hosted
+# runner compiles it fine — setup.py fetches the matching native toolchain.
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Check for W-state functions
+        run: |
+          if awk -F',' 'NR>1 && $2=="W"' data/lcuswitch_functions.csv | grep -q .; then
+            echo "::error::Function list should not contain functions with Quality=W!"
+            echo "Found the following lines:"
+            awk -F',' 'NR>1 && $2=="W"' data/lcuswitch_functions.csv
+            exit 1
+          fi
+
+      - name: Set up dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y python3-pip ninja-build cmake ccache xdelta3 \
+            clang libssl-dev python-is-python3 curl wget
+          # libtinfo6: runtime dep of the prebuilt Clang 3.9.1.
+          sudo apt-get install -y libtinfo6
+
+      - name: Set up python package dependencies
+        run: pip3 install --break-system-packages capstone colorama cxxfilt pyelftools watchdog python-Levenshtein toml
+
+      - name: Set up cache for toolchain
+        uses: actions/cache@v4
+        with:
+          key: tools_libs
+          path: |
+            toolchain/bin
+            toolchain/libcxx-include
+            toolchain/cache-version-url.txt
+
+      - name: Run project-only setup (no binary)
+        run: tools/setup.py --project-only
+
+      - name: Build project
+        run: tools/build.py

@@ -1,0 +1,24 @@
+# clang-format lint (GitHub Actions, public).
+#
+# Runs clang-format v20 directly over src/. Matches the repo's .clang-format.
+
+on: [push, pull_request]
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure clang-format 20
+        run: command -v clang-format >/dev/null || pip3 install --break-system-packages "clang-format~=20.1"
+
+      - name: Check formatting
+        run: |
+          set -euo pipefail
+          files=$(find src -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \))
+          if [ -z "$files" ]; then
+            echo "No source files to check."
+            exit 0
+          fi
+          echo "$files" | xargs clang-format --dry-run --Werror

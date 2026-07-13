@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Discord
+    url: https://discord.com/invite/AyFjHz5EaT
+    about: Questions, help matching a function, or general decomp chat.
+  - name: 📊 Progress dashboard
+    url: https://decomp.dev/Nintendocustom/Lego-City-Undercover-Decompilation
+    about: Live matched-functions / code-size progress.
+  - name: 🧩 How decomp.me scratches work
+    url: https://decomp.me
+    about: Iterate on a function in the browser — no binary or toolchain needed.

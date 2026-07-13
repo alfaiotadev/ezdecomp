@@ -1,0 +1,47 @@
+name: 🟣 Fable escalation (hard non-matching function)
+description: A function that won't converge to 100% — hand it to the advisor. Must be self-contained.
+title: "Fable: <MangledSymbol>"
+labels: ["fable"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this only after a genuine attempt (see the matching loop in
+        [CONTRIBUTING.md](../blob/main/docs/CONTRIBUTING.md)). The advisor reads
+        this issue, reasons about the Clang 3.9.1 lowering, and comments candidate
+        source. It implements nothing — you apply, verify on decomp.me, and open the PR.
+  - type: input
+    id: symbol
+    attributes:
+      label: Function symbol
+    validations:
+      required: true
+  - type: input
+    id: scratch
+    attributes:
+      label: decomp.me scratch URL (current best attempt)
+      placeholder: https://decomp.me/scratch/xxxxx
+    validations:
+      required: true
+  - type: textarea
+    id: semantics
+    attributes:
+      label: What the function does
+      description: Your understanding of the semantics.
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: Source you tried
+      render: cpp
+    validations:
+      required: true
+  - type: textarea
+    id: residual
+    attributes:
+      label: Residual diff
+      description: The instruction-level diff that won't go away (from the decomp.me scratch or `tools/check --always-diff`).
+      render: text
+    validations:
+      required: true

@@ -1,0 +1,51 @@
+# Progress report generation (GitHub Actions, public).
+#
+# Generates report.json from the current function states (data/lcuswitch_functions.csv)
+# and uploads it as an artifact for the public decomp.dev dashboard. No binary needed.
+#
+# DEFERRED (next session): also push the rich ASCII progress board to the GitHub
+# wiki. That needs the GitHub-wiki push mode added back to tools/wiki/gen_progress.py
+# (currently GitHub-only). Once ported, add a build step (project-only setup +
+# tools/build.py, for the per-subsystem bars) and a wiki-refresh step:
+#
+#   - name: Refresh wiki progress board
+#     env:
+#       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       GITHUB_REPOSITORY: ${{ github.repository }}
+#       GITHUB_SERVER_URL: ${{ github.server_url }}
+#     run: python tools/wiki/gen_progress.py --push --wiki-provider github
+#
+# (Requires the wiki initialised once via the repo's Wiki tab so <repo>.wiki.git exists.)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  update-progress:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [1.0.3]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install dependencies
+        run: pip3 install --break-system-packages protobuf capstone colorama cxxfilt pyelftools ansiwrap watchdog python-Levenshtein toml gitpython
+
+      - name: Generate report
+        run: |
+          PYTHONPATH="${PYTHONPATH:-}:${{ github.workspace }}/tools" python .github/scripts/gen_report.py -o report.json
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.version }}_report
+          path: report.json

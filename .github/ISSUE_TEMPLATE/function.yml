@@ -1,0 +1,37 @@
+name: 🧩 Work on a function
+description: Claim a function to decompile (or request one be seeded). Most open functions already have a bot-created issue with a decomp.me scratch — check existing issues first.
+title: "Implement <MangledSymbol>"
+labels: ["open"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **You do not need the game binary or any local setup.** Iterate on the
+        decomp.me scratch in your browser with any LLM until the diff reads 100%,
+        then link the scratch here / in your PR. See [CONTRIBUTING.md](../blob/main/docs/CONTRIBUTING.md).
+
+        To avoid duplicate work: comment `/claim` on the issue you want. A
+        maintainer bot will assign it to you and label it `claimed`.
+  - type: input
+    id: symbol
+    attributes:
+      label: Function symbol
+      description: The mangled symbol from data/lcuswitch_functions.csv (e.g. _ZN7SAction...Ev).
+      placeholder: _ZN...
+    validations:
+      required: true
+  - type: input
+    id: scratch
+    attributes:
+      label: decomp.me scratch URL
+      description: Paste the seeded scratch link if one exists. Leave blank to request the bot seed one.
+      placeholder: https://decomp.me/scratch/xxxxx
+    validations:
+      required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Anything relevant — related functions, blockers, questions.
+    validations:
+      required: false
