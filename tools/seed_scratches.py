@@ -90,20 +90,52 @@ def demangle(symbol):
         return symbol
 
 
-def make_scratch(symbol, u_context_source):
-    """Run tools/decompme, auto-confirm the upload, return the scratch URL or None."""
-    cmd = [DECOMPME]
-    if u_context_source:
-        cmd += ["-s", u_context_source]
-    cmd.append(symbol)
+ANSI = re.compile(r"\x1b\[[0-9;?]*[a-zA-Z]")
+
+
+def make_scratch(symbol, u_context_source, timeout=120):
+    """Run tools/decompme in a PTY (its upload confirmation REQUIRES a TTY —
+    piped stdin fails with 'input device is not a TTY'), auto-answer the prompt,
+    and return (scratch_url, None) or (None, error). Must run with cwd=/workspace."""
+    import pty, select, signal, time as _t
+    cmd = [DECOMPME] + (["-s", u_context_source] if u_context_source else []) + [symbol]
+    pid, fd = pty.fork()
+    if pid == 0:  # child
+        os.execvp(cmd[0], cmd)
+        os._exit(127)
+    buf, sent, t0 = b"", False, _t.time()
+    while True:
+        if _t.time() - t0 > timeout:
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except OSError:
+                pass
+            os.waitpid(pid, 0)
+            return None, f"timed out after {timeout}s"
+        try:
+            r, _, _ = select.select([fd], [], [], 1)
+        except OSError:
+            break
+        if fd in r:
+            try:
+                d = os.read(fd, 4096)
+            except OSError:
+                break
+            if not d:
+                break
+            buf += d
+            if not sent and b"Upload?" in buf:
+                os.write(fd, b"y\n")
+                sent = True
     try:
-        r = subprocess.run(cmd, input="y\n", capture_output=True, text=True, timeout=180)
-    except Exception as e:
-        return None, f"decompme error: {e}"
-    m = re.search(r"Direct:\s*(https://decomp\.me/scratch/\S+)", r.stdout)
+        os.waitpid(pid, 0)
+    except OSError:
+        pass
+    out = ANSI.sub("", buf.decode(errors="replace"))
+    m = re.search(r"Direct:\s*(https://decomp\.me/scratch/\S+)", out)
     if not m:
-        err = next((ln for ln in (r.stdout + r.stderr).splitlines() if "Error" in ln or "error" in ln), "")
-        return None, (err or "no scratch URL")
+        err = next((ln.strip() for ln in out.splitlines() if "Error:" in ln), "no scratch URL")
+        return None, err
     return m.group(1).rstrip("/"), None
 
 
