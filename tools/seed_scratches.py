@@ -46,7 +46,9 @@ def eligible_functions(qualities, min_size, max_size):
             if len(p) < 4:
                 continue
             _, q, size, name = p[0], p[1], p[2], p[3]
-            if q not in qualities or not name or name.startswith(("_ZThn", "_ZTh")):
+            # skip compiler thunks and deleting destructors (D0Ev) — decompme can't
+            # build a translation unit for them ("failed to get translation unit").
+            if q not in qualities or not name or name.startswith(("_ZThn", "_ZTh")) or name.endswith("D0Ev"):
                 continue
             try:
                 b = int(size)
