@@ -1,4 +1,5 @@
 #pragma once
 
 int NuFileExtPlatformBit(int platform);
-int NuFileGetEndianSwapOnWrite();
+void NuFileGetCurrentDirectory(char* dst);
+char* NuFileGetCurrentDirectory();

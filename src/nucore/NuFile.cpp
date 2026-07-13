@@ -1,12 +1,17 @@
 #include "nucore/NuFile.h"
 
-__attribute__((visibility("hidden"))) int* g_pNuFile_SwapEndianOnWrite;
-__attribute__((visibility("hidden"))) int* g_pNuFile_SwapEndianOnRead;
+#include "nucore/NuString.h"
+
+__attribute__((visibility("hidden"))) char** g_pCurrentDirectoryBase;
 
 int NuFileExtPlatformBit(int platform) {
     return 1 << platform;
 }
 
-int NuFileGetEndianSwapOnWrite() {
-    return *g_pNuFile_SwapEndianOnWrite;
+char* NuFileGetCurrentDirectory() {
+    return *g_pCurrentDirectoryBase + 0x50;
+}
+
+void NuFileGetCurrentDirectory(char* dst) {
+    NuStrCpy(dst, *g_pCurrentDirectoryBase + 0x50);
 }
