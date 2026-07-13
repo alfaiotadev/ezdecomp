@@ -38,12 +38,12 @@ void CountdownTimer::Update(float deltaTime) {
     }
     m_elapsedTime += deltaTime;
 
-    if (!(m_duration > 0.0f && m_elapsedTime < m_duration)) {
+    if (m_duration > 0.0f && m_elapsedTime < m_duration) {
+        m_progress = m_elapsedTime / m_duration;
+    } else {
         m_elapsedTime = m_duration;
         m_progress = 1.0f;
         m_isRunning = false;
-    } else {
-        m_progress = m_elapsedTime / m_duration;
     }
 }
 bool CountdownTimer::CheckCountdown(float deltaTime) {
