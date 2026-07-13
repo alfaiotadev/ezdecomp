@@ -39,6 +39,7 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 
 # print "NUMBER SYMBOL" of the oldest open `open`-label issue not in $ATTEMPTED
+# whose function is still matchable (CSV quality U or M — skip irreducible `m` and done `O`)
 fetch_issue() {
   ATTEMPTED="$ATTEMPTED" python3 - "$TOK" <<'PY'
 import json,os,re,sys,urllib.request
@@ -47,15 +48,23 @@ done=set()
 try:
     done={l.strip() for l in open(os.environ["ATTEMPTED"]) if l.strip()}
 except FileNotFoundError: pass
+# CSV quality per symbol (skip m = irreducible/done, O = matched)
+qual={}
+for ln in open("/workspace/data/lcuswitch_functions.csv"):
+    p=ln.rstrip("\n").split(",")
+    if len(p)>=4: qual[p[3]]=p[1]
 d=json.load(urllib.request.urlopen(urllib.request.Request(
- "https://api.github.com/repos/alfaiotadev/ezdecomp/issues?state=open&labels=open&sort=created&direction=asc&per_page=50",
+ "https://api.github.com/repos/alfaiotadev/ezdecomp/issues?state=open&labels=open&sort=created&direction=asc&per_page=100",
  headers={"Authorization":"Bearer "+tok,"User-Agent":"crowd","Accept":"application/vnd.github+json"})))
 for it in d:
     if "pull_request" in it: continue
     if str(it["number"]) in done: continue
     m=re.search(r"\*\*Symbol:\*\*\s*`(_Z[\w.]+)`", it.get("body") or "")
-    if m:
-        print(it["number"], m.group(1)); break
+    if not m: continue
+    sym=m.group(1)
+    if qual.get(sym) not in ("U","M"):   # skip irreducible m / already-O / unknown
+        continue
+    print(it["number"], sym); break
 PY
 }
 
