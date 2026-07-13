@@ -30,9 +30,19 @@ The Japanese version isn't currently supported, because it was compiled with a d
 similar to the other 1.0.0 versions.
 
 # How to help
-If you want to help with the decompilation, then you can do either the todos below, check for possible todo comments in
-the code, decompile functions/classes, improve readability of functions or fix non-matching functions. You can also
-check out the [CONTRIBUTING.md](docs/CONTRIBUTING.md) for more information on how to contribute.
+
+**You don't need the game, a binary, or any local setup** — anyone with a browser and
+an LLM can contribute a byte-exact match:
+
+1. Pick an [open issue](https://github.com/alfaiotadev/ezdecomp/issues?q=is%3Aissue+is%3Aopen+label%3Aopen)
+   (labelled `open` / `good-first-function`) — each links a ready-made
+   [decomp.me](https://decomp.me) scratch.
+2. Comment `/claim`, open the scratch, and iterate C++ with any LLM until the diff hits **100%**.
+3. Open a PR with your source and the scratch link. decomp.me compiles + diffs on its
+   server, so no binary is needed to prove the match.
+
+Full guide: [CONTRIBUTING.md](docs/CONTRIBUTING.md) (browser path + a local byte-verified
+path for power users). You can also improve readability or fix non-matching functions.
 
 # Todo
 - fix lint.py

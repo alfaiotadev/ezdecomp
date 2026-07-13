@@ -1,75 +1,77 @@
 # Contributing
 
-## How difficult is it to contribute?
+There are two ways to contribute. **Most people should use the browser path** — it
+needs no game binary, no toolchain, and no local setup.
 
-It's actually easy to contribute since there are many small functions to decompile, additionally symbols are available
-for most functions and classes making it easier to understand what each function does.
-You can also work on existing implementations by improving the readability or accuracy of the code.
+---
 
-You don't need deep knowledge of the game's internals to get started, but having some basic programming knowledge is
-recommended.
+## Path A — In the browser, with any LLM (recommended, zero setup)
 
-Most of the time you already know what a function does by its name and just need to reimplement it in C++ and it matches
-most of the time right away, especially for smaller functions.
+This is the whole point of the project: you can produce a byte-exact match without
+owning the game or installing anything. [decomp.me](https://decomp.me) compiles and
+diffs your code **on its server** against the target.
 
-# How to decompile step by step
+1. **Pick a task.** Browse the [open issues](https://github.com/alfaiotadev/ezdecomp/issues?q=is%3Aissue+is%3Aopen+label%3Aopen)
+   (label `open` / `good-first-function`). Each issue links a ready-made **decomp.me
+   scratch** with the target assembly, context, and exact compiler flags baked in.
+2. **Claim it** so nobody duplicates your work: comment `/claim` on the issue.
+3. **Open the scratch link.** You'll see the target assembly on the right and an
+   editor on the left. Write the function in C++ (paste it to your favourite LLM,
+   ask it to match the target asm — iterate).
+4. **Match it.** Every time you edit, decomp.me recompiles and shows the diff.
+   Your goal is **100%** (the diff turns green / score 0).
+5. **Submit.** Open a pull request that adds your source under the right
+   `src/<subsystem>/` directory, and **paste the 100% scratch link** in the PR
+   (the PR template asks for it). That link is your proof of a match.
 
-1. Make sure to set up the project by following the instructions in [docs/BUILDING.md](docs/BUILDING.md).
-2. Run `tools/check` to make sure the project is set up correctly.
-3. Pick a function or class to work on.
-    * Choose a function you understand or are interested in.
-4. Try to understand what the function does. You can use IDA Pro or Ghidra for this.
-    * You can rename variables and use "Auto Fill In Structure" in Ghidra to make it easier to understand the function.
-5. Implement the function in C++.
-    * Try to stay close to the original code, but make sure it's readable and looks like a clean C++ implementation.
-    * Make sure to not just copy-paste pseudocode from IDA/Ghidra.
-6. Build the project using `python3 tools/build.py`.
-7. Run `tools/check` to see if your implementation matches the original binary.
-8. If it doesn't match, try to understand why and fix your implementation.
-9. Once it matches, you can create a pull request to submit your changes.
+That's it. A maintainer bot re-verifies the match privately and merges.
 
-**Additional information and tips can be found on [botw.link](https://botw.link/contribute), which has a lot of
-useful information on how to approach decompilation and reverse engineering in general.**
+> **Why the scratch link is the proof:** the public CI only *compiles* and lint-checks
+> — it can't byte-verify, because that needs the copyrighted binary, which is never
+> in this repo or CI. A 100% decomp.me scratch is the objective proof instead.
 
-## If you get stuck
+### Tips
+- Small, straight-line functions match fastest — start there.
+- The function name usually tells you what it does; you rarely need deep game knowledge.
+- Stuck? Ask in the [Discord](https://discord.com/invite/AyFjHz5EaT). General decomp
+  technique: [botw.link/contribute](https://botw.link/contribute) and the
+  [cheatsheet](https://botw.link/cheatsheet).
+- Truly won't converge (a pure compiler artifact)? Open a
+  [🟣 Fable escalation](https://github.com/alfaiotadev/ezdecomp/issues/new?template=fable-escalation.yml)
+  issue with your scratch and the residual diff.
 
-If you get stuck, don't hesitate to ask for help in the [Discord server](https://discord.com/invite/AyFjHz5EaT), you can
-also take a look at this [cheatsheet](https://botw.link/cheatsheet).
-To simplify the process you can create a [decomp.me](https://decomp.me/) scratch to make it easier to share code
-snippets and experiment around with different implementations.
+---
 
-To create a decomp.me scratch run:
+## Path B — Local, byte-verified (power users)
 
-```shell
-tools/decompme <Function Name>
-```
+If you have your own legal dump of the game you can run the full matching loop
+locally and byte-verify with `tools/check` before submitting.
 
-## Pull Requests
+1. Set up the project per [docs/BUILDING.md](BUILDING.md), then run `tools/check` to
+   confirm the setup.
+2. Pick a function; understand it (IDA Pro / Ghidra help — rename vars, auto-fill
+   structs). Don't paste raw pseudocode; write clean C++.
+3. `python3 tools/build.py`, then `tools/check <symbol>` — iterate until it prints `OK`.
+4. Open a PR (a scratch link is still welcome but not required if `tools/check` is `OK`).
 
-Before submitting a change, make sure to run `tools/lint.py` to verify that your source files are formatted like the
-rest of the repository.
+---
 
-Linter arguments:
+## Pull requests
 
-- `--fix`: Try to fix the formatting issues automatically.
-- `--format`: Run clang-format before checks.
-- `--find-unsorted`: Find unsorted classes/enums in the source files.
+Name the PR:
+- **Implement `Name`** — a matching (100%) implementation
+- **Work on `Name`** — partial / non-matching progress
+- **Complete `Name`** — finishing a class or method
 
-CI (GitHub Actions, see [`.github/workflows/`](../.github/workflows)) will run on your PR to verify that your
-code builds, still matches, and is clang-formatted.
+Before submitting, run `tools/lint.py` so your files match the repo's clang-format
+style (`--fix` to auto-fix, `--format` to run clang-format, `--find-unsorted` to find
+unsorted classes/enums). **Back up first — the linter is experimental.**
 
-It is *recommended* that you name your PR in this fashion:
-
-- Matching implementation of a class or method: "Implement `Name`"
-- Non-matching / incomplete implementation of a class or method: "Work on `Name`"
-- Completion of a class or method: "Complete `Name`"
-
-You can add anything you want after the message. Your pull request will be squashed and merged, so don't stress too much
-about the makeup of the individual commits.
-
-### Warning: Make sure to back up your changes before running an automatic fix! The linter is experimental and could break your files.
+Public CI (GitHub Actions, [`.github/workflows/`](../.github/workflows)) runs on your
+PR: it builds the project and checks clang-format. It does **not** byte-verify (see the
+note above). PRs are squash-merged, so don't stress over individual commits.
 
 ## Info
 
-As this project is in its very early stages, It's hard to put guidelines on something that will evolve over time as
-contributors gain a better understanding of the game's internals.
+The project is early — guidelines will evolve as we learn more about the game's
+internals. When in doubt, ask on Discord.
