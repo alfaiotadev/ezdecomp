@@ -6,10 +6,10 @@ public:
         kQuat = 0x16,
     };
 
-    static int ms_fieldSizes[];
+    static void* (*s_createFieldFuncs[])(void);
 };
 
-int NuSerializeGetFieldSize(NuSerialize::FieldType type);
+void* NuSerializeCreateField(NuSerialize::FieldType type);
 
 template <typename T>
 NuSerialize::FieldType NuSerializeGetFieldTypeMem();
