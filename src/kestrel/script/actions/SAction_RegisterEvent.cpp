@@ -1,7 +1,7 @@
 #include "kestrel/script/actions/SAction_RegisterEvent.h"
 
 SAction_RegisterEvent::SAction_RegisterEvent(int inputVariant) {
-    m_Signature = 0x7735;
+    m_Signature = 0x77357735;
     m_InputVariant = inputVariant;
 }
 
