@@ -30,6 +30,10 @@ void NuPvsBitArrayZero(unsigned char* arr, unsigned int bits) {
     memset(arr, 0, (bits >> 3) + 1);
 }
 
+void NuPvsBitArrayOne(unsigned char* arr, unsigned int bits) {
+    memset(arr, 0xff, (bits >> 3) + 1);
+}
+
 int NuPvsGetCellIdx(const NuPvsData* data, int i, int j) {
     return data->xCellCount * j + i;
 }
