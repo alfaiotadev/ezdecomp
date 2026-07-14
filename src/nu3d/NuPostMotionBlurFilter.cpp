@@ -1,7 +1,5 @@
-#include "nu3d/NuPostMotionBlurFilter.h"
+extern float g_cutsceneMotionBlurCharacterExposure;
 
-static float* volatile g_pCutsceneMotionBlurCameraExposure;
-
-void NuSetCutsceneMotionBlurCameraExposure(float exposure) {
-    *g_pCutsceneMotionBlurCameraExposure = exposure < 0.0f ? 0.0f : exposure;
+void NuSetCutsceneMotionBlurCharacterExposure(float exposure) {
+    g_cutsceneMotionBlurCharacterExposure = exposure < 0.0f ? 0.0f : exposure;
 }
