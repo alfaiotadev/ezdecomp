@@ -1,11 +1,14 @@
-template <class T, bool B>
-class NuSmartPtr;
-
-class NuScene;
 struct instNUGCUTSCENE;
+struct NuCutSceneRaw;
+struct NuANI4AnimRaw;
 
-NuSmartPtr<NuScene, true> (*NuCutSceneGetHGObj)(instNUGCUTSCENE*, int);
+using NuCutSceneCharacterRenderFn
+    = void (*)(int, instNUGCUTSCENE*, NuCutSceneRaw*, float, int, NuANI4AnimRaw*);
 
-void NuSetGetHGObjFromIndxFn(NuSmartPtr<NuScene, true> (*fn)(instNUGCUTSCENE*, int)) {
-    NuCutSceneGetHGObj = fn;
+extern NuCutSceneCharacterRenderFn NuCutSceneCharacterRender;
+
+void NuSetCutSceneCharacterRenderFn(NuCutSceneCharacterRenderFn fn) {
+    NuCutSceneCharacterRender = fn;
 }
+
+NuCutSceneCharacterRenderFn NuCutSceneCharacterRender = nullptr;
