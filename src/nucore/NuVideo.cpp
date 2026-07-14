@@ -1,6 +1,5 @@
 #include "NuVideo.h"
-
-int NuRenderThreadSetup::UserDisplay = 0;
+#include "NuVideoState.h"
 
 void NuVideoSetBrightnessPS() {}
 
@@ -8,6 +7,7 @@ int NuVideoGetAspectPS() {
     return 1;
 }
 
-void NuVideoSetDisplayType(NUVIDEO_DISPLAY_TYPE type) {
-    NuRenderThreadSetup::UserDisplay = type;
+void NuVideoSetResolution(int width, int height) {
+    nuvideo_settings->width = width;
+    nuvideo_settings->height = height;
 }
