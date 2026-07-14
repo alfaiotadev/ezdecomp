@@ -1,11 +1,10 @@
-struct NUPADRECORD {
-    char pad[52];
-    int recordEndButtons;
+struct NuPadRecordData {
+    char pad[60];
+    int recording;
 };
 
-__attribute__((visibility("hidden"))) NUPADRECORD padrec;
-__attribute__((visibility("hidden"))) NUPADRECORD* g_pPadrec = &padrec;
+__attribute__((visibility("hidden"))) NuPadRecordData* g_pNuPadRecordData;
 
-void NuPadRecordSetRecordEndButtons(int buttons) {
-    g_pPadrec->recordEndButtons = buttons;
+void NuPadRecordStart() {
+    g_pNuPadRecordData->recording = 1;
 }
