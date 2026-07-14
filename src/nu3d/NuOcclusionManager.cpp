@@ -1,12 +1,5 @@
-#include "nu3d/NuOcclusionManager.h"
+#include "nu3d/OcclusionManager.h"
 
-struct OcclusionManager {
-    char pad[356];
-    float occluderScreenSpaceThreshold;
-};
-
-extern OcclusionManager g_OcclusionManager;
-
-void NuOcclusionManagerSetOccluderScreenSpaceThreshold(float threshold) {
-    g_OcclusionManager.occluderScreenSpaceThreshold = threshold;
+void NuOcclusionManagerSetEnabled(int enabled) {
+    g_OcclusionManager.enabled = enabled != 0;
 }
