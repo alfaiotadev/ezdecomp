@@ -1,7 +1,9 @@
 #include "nu3d/NuPortal.h"
 
-int g_NuPortalDebugDraw;
+extern int portals_enabled;
 
-void NuPortalEnableDebugDraw(int enable) {
-    g_NuPortalDebugDraw = enable;
+int NuPortalEnabled(int enabled) {
+    int old = portals_enabled;
+    portals_enabled = enabled;
+    return old;
 }

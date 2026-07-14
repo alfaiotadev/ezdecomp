@@ -1,3 +1,3 @@
 #pragma once
 
-void NuPortalEnableDebugDraw(int enable);
+int NuPortalEnabled(int enabled);
