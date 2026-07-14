@@ -2,9 +2,8 @@
 
 void NuDrawBounds(const NuVector3Base&, const NuVector3Base&, NUMTX*, NUCOLOUR3 const&) {}
 
-int s_NuRndReflectionGobjFlag;
-__attribute__((visibility("hidden"))) int* g_pNuRndReflectionGobj = &s_NuRndReflectionGobjFlag;
+int g_CommandBuffer[2];
 
-int NuRndIsReflectionGobj() {
-    return *g_pNuRndReflectionGobj;
+int NuRndrWasDrawnUnreflectedGobj() {
+    return g_CommandBuffer[0];
 }

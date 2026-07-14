@@ -10,4 +10,4 @@ struct NUCOLOUR3 {
 };
 
 void NuDrawBounds(const NuVector3Base& min, const NuVector3Base& max, NUMTX* mtx, NUCOLOUR3 const& colour);
-int NuRndIsReflectionGobj();
+int NuRndrWasDrawnUnreflectedGobj();
