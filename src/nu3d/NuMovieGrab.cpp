@@ -1,7 +1,5 @@
-#include "nu3d/NuMovieGrab.h"
-
-struct NuMovieGrabInfo {
-    char pad0[20];
+struct numoviegrabinfo_s {
+    char pad[20];
     int startFrameTemp;
     int startFrameCfg;
     int endFrameTemp;
@@ -12,8 +10,8 @@ struct NuMovieGrabInfo {
     float endTimeCfg;
 };
 
-__attribute__((visibility("hidden"))) NuMovieGrabInfo g_NuMovieGrabInfo;
+__attribute__((visibility("hidden"))) numoviegrabinfo_s g_NuMovieGrabInfo;
 
-int NuMovieGrabGetEndFrameCfg(void) {
-    return g_NuMovieGrabInfo.endFrameCfg;
+void NuMovieGrabSetStartTimeTemp(float f) {
+    g_NuMovieGrabInfo.startTimeTemp = f;
 }
