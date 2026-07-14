@@ -1,7 +1,5 @@
-#include "nu3d/NuSpecial.h"
+char gNuSpecialLayers[32] __attribute__((aligned(4096)));
 
-extern char gNuSpecialLayers[16];
-
-void NuSetLayerVisibility(int layer, bool visible) {
-    gNuSpecialLayers[layer] = visible & 1;
+bool NuGetLayerVisibility(int layer) {
+    return gNuSpecialLayers[layer] != 0;
 }
