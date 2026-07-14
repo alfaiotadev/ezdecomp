@@ -1,22 +1,21 @@
 #pragma once
 
-enum eStringBanks {
-    kStringBank_Story = 0,
-    kStringBank_FreePlay,
-    kStringBank_2,
-    kStringBank_3,
-    kStringBank_4,
-    kStringBank_5,
-    kStringBank_Count
+enum eStringBanks : unsigned int {
+    STRINGBANK_0 = 0,
+    STRINGBANK_1,
+    STRINGBANK_2,
+    STRINGBANK_3,
+    STRINGBANK_4,
+    STRINGBANK_5,
+    STRINGBANK_COUNT
 };
 
-struct NuStringTable {
-    int field0;
+struct NuStringTableState {
+    int field_0;
     eStringBanks bank;
-    char pad[2872];
-    int format;
 };
 
+__attribute__((visibility("hidden"))) extern NuStringTableState g_NuStringTable;
+
+void NuStringTableSetBank(eStringBanks bank);
 eStringBanks NuStringTableGetBank();
-void NuStringTableSetPlatformFilter(const char* filter);
-void NuStringTableSetTypeFilter(const char* filter);
