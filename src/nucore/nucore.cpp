@@ -3,6 +3,8 @@
 #include "nn/oe.h"
 #include "nn/settings.h"
 
+int g_NuOSMenuFreezeState[1446] = {};
+
 void NuLanguageInitPS(NuLanguage* out_lang, NuRegion* out_region) {
     *out_region = NuRegion::AMERICA;
     nn::settings::LanguageCode system_lang = nn::oe::GetDesiredLanguage();
@@ -54,8 +56,6 @@ bool NuLanguageConsoleSelectable(bool* availableLangs) {
     return !availableLangs[16];
 }
 
-__attribute__((visibility("hidden"))) const char** g_NuCrashDumpId;
-
-const char* NuCrashDumpGetId(void) {
-    return *g_NuCrashDumpId;
+void NuDisableOSMenuFreeze() {
+    g_NuOSMenuFreezeState[1445] = 1;
 }
