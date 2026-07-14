@@ -4,3 +4,4 @@
 
 void NuLanguageInitPS(NuLanguage* out_lang, NuRegion* out_region);
 bool NuLanguageConsoleSelectable(bool* availableLangs);
+const char* NuCrashDumpGetId(void);
