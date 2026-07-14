@@ -1,9 +1,7 @@
-struct NuPortalInfo {
-    int enabled;
-};
+#include "nu3d/NuPortal.h"
 
-extern NuPortalInfo g_NuPortalInfo;
+int g_NuPortalDebugDraw;
 
-int NuPortalIsEnabled(void) {
-    return g_NuPortalInfo.enabled;
+void NuPortalEnableDebugDraw(int enable) {
+    g_NuPortalDebugDraw = enable;
 }
