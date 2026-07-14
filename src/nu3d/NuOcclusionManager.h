@@ -1,6 +1,7 @@
-#ifndef NUOCCLUSIONMANAGER_H
-#define NUOCCLUSIONMANAGER_H
+#pragma once
 
-bool NuOcclusionManagerIsInitialised();
-
-#endif  // NUOCCLUSIONMANAGER_H
+class OcclusionManager {
+public:
+    char pad[0x160];
+    float m_occluderDotProductThreshold;
+};
