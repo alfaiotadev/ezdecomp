@@ -1,11 +1,5 @@
-struct MemoryManager;
+int g_cutAudioStream;
 
-struct NuGCutSceneSysData {
-    MemoryManager* memoryManager;
-};
-
-__attribute__((visibility("hidden"))) NuGCutSceneSysData* g_pNuGCutSceneSysData;
-
-void NuGCutSceneSysInitMemoryManager(MemoryManager* mgr) {
-    g_pNuGCutSceneSysData->memoryManager = mgr;
+void NuGCutSetCutAudioStream(int stream) {
+    g_cutAudioStream = stream;
 }
