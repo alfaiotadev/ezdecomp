@@ -1,8 +1,16 @@
-extern "C" float mtl_animation_speed_scale;
+#include "nu3d/NuMtl.h"
 
-void NuDisplayListAnimateMtls(float, float);
+struct NuMtlGlobals {
+    int field_0x0;
+    int field_0x4;
+    int field_0x8;
+    int currentRenderPlane;
+};
 
-void NuMtlAnimate(float f1, float f2) {
-    float scale = mtl_animation_speed_scale;
-    NuDisplayListAnimateMtls(scale * f1, scale * f2);
+__attribute__((visibility("hidden"))) NuMtlGlobals g_NuMtlGlobals;
+
+int NuMtlSetCurrentRenderPlane(int plane) {
+    int prev = g_NuMtlGlobals.currentRenderPlane;
+    g_NuMtlGlobals.currentRenderPlane = plane;
+    return prev;
 }
