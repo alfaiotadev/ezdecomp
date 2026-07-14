@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LEGO City Undercover — Decompilation Progress</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#e6edf3;
+    --muted:#8b949e; --accent:#3fb950; --accent2:#58a6ff; --track:#21262d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:900px;margin:0 auto;padding:48px 20px 64px}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 32px;font-size:14px}
+  .hero{background:var(--panel);border:1px solid var(--border);border-radius:14px;
+    padding:28px 28px 24px;margin-bottom:20px}
+  .pct{font-size:56px;font-weight:700;line-height:1;letter-spacing:-.02em}
+  .pct small{font-size:20px;color:var(--muted);font-weight:500;margin-left:8px}
+  .hero .cap{color:var(--muted);font-size:14px;margin-top:6px}
+  .bar{height:12px;background:var(--track);border-radius:6px;margin-top:18px;overflow:hidden}
+  .bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),#2ea043);
+    border-radius:6px;transition:width .8s ease}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+  .tile{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+  .tile .n{font-size:26px;font-weight:700;letter-spacing:-.01em}
+  .tile .l{color:var(--muted);font-size:12.5px;margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:20px}
+  .panel h2{font-size:14px;margin:0 0 14px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  footer{color:var(--muted);font-size:13px;margin-top:28px;line-height:1.9}
+  footer a{color:var(--accent2);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  .note{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:14px 18px;color:var(--muted);font-size:14px;margin-bottom:20px}
+  @media(max-width:560px){.tiles{grid-template-columns:1fr}.pct{font-size:44px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>LEGO City Undercover — Decompilation Progress</h1>
+  <p class="sub">Nintendo Switch · EU v1.0.3 · clean-room matching decompilation · byte-for-byte verified</p>
+
+  <div class="hero">
+    <div class="pct"><span id="pctfn">—</span>%<small>of functions matched</small></div>
+    <div class="cap"><span id="mn">—</span> / <span id="tn">—</span> functions are byte-for-byte identical to the original</div>
+    <div class="bar"><i id="barfn"></i></div>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><div class="n" id="pctcode">—%</div><div class="l">Code size matched</div></div>
+    <div class="tile"><div class="n" id="wip">—</div><div class="l">In progress (M/m)</div></div>
+    <div class="tile"><div class="n" id="remaining">—</div><div class="l">Functions remaining</div></div>
+  </div>
+
+  <div class="note">
+    🎯 The (totally serious) goal: match this decomp before <b>GTA VI</b> ships (19 Oct 2026).
+    Anyone can help — pick an <a href="https://github.com/alfaiotadev/ezdecomp/issues?q=is%3Aissue+is%3Aopen+label%3Aopen">open issue</a>,
+    iterate its decomp.me scratch in the browser with any LLM to 100%, open a PR. No game binary needed.
+  </div>
+
+  <div class="panel">
+    <h2>Matched functions over time</h2>
+    <canvas id="chart" height="120"></canvas>
+  </div>
+
+  <footer>
+    <span id="gen"></span><br>
+    <a href="https://github.com/alfaiotadev/ezdecomp">Repository</a> ·
+    <a href="https://github.com/alfaiotadev/ezdecomp/issues?q=is%3Aissue+is%3Aopen+label%3Aopen">Task board</a> ·
+    <a href="https://decomp.dev/Nintendocustom/Lego-City-Undercover-Decompilation">decomp.dev</a> ·
+    <a href="https://discord.com/invite/AyFjHz5EaT">Discord</a> ·
+    <a href="https://github.com/alfaiotadev/ezdecomp/blob/main/docs/CONTRIBUTING.md">How to contribute</a>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+const fmt = n => n.toLocaleString('en-US');
+fetch('progress.json?_=' + Date.now()).then(r => r.json()).then(d => {
+  document.getElementById('pctfn').textContent = d.pct_fn.toFixed(2);
+  document.getElementById('mn').textContent = fmt(d.matched_n);
+  document.getElementById('tn').textContent = fmt(d.total_n);
+  document.getElementById('pctcode').textContent = d.pct_code.toFixed(2) + '%';
+  document.getElementById('wip').textContent = fmt(d.inprogress_n);
+  document.getElementById('remaining').textContent = fmt(d.total_n - d.matched_n - d.inprogress_n);
+  requestAnimationFrame(() => { document.getElementById('barfn').style.width = Math.max(d.pct_fn, 0.5) + '%'; });
+  if (d.generated) document.getElementById('gen').textContent = 'Auto-generated ' + d.generated;
+
+  const s = d.series || [];
+  if (s.length && window.Chart) {
+    new Chart(document.getElementById('chart'), {
+      type: 'line',
+      data: { labels: s.map(p => p[0]),
+        datasets: [{ data: s.map(p => p[1]), label: 'Matched (O)',
+          borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,.12)',
+          fill: true, tension: .25, pointRadius: 2, borderWidth: 2 }] },
+      options: { responsive: true, plugins: { legend: { display: false } },
+        scales: { x: { ticks: { color: '#8b949e', maxTicksLimit: 8 }, grid: { color: '#21262d' } },
+                  y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' }, beginAtZero: true } } }
+    });
+  }
+}).catch(e => { document.getElementById('pctfn').textContent = '?'; });
+</script>
+</body>
+</html>

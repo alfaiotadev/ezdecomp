@@ -1,0 +1,39 @@
+# Build + deploy the progress dashboard to GitHub Pages.
+# Regenerates docs/progress.json from the CSV (+ its git history) and publishes docs/.
+# No binary needed — pure repo state.
+
+on:
+  push:
+    branches: [main, master]
+    paths: ["data/lcuswitch_functions.csv", "docs/**", "tools/gen_progress_json.py", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history for the matched-over-time series
+
+      - name: Generate progress.json
+        run: SOURCE_DATE_EPOCH=$(date +%s) python3 tools/gen_progress_json.py
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deploy
+        uses: actions/deploy-pages@v4
