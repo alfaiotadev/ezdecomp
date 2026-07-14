@@ -1,18 +1,11 @@
-#include <cstddef>
+struct MemoryManager;
 
-class VfxThing;
-
-__attribute__((visibility("hidden"))) __attribute__((aligned(4096))) VfxThing* gNuGCutSceneSysVfxThing;
-
-struct NuGCutSceneSysBackgroundData {
-    char pad[0x10];
-    void* load;
-    char pad2[0x68];
+struct NuGCutSceneSysData {
+    MemoryManager* memoryManager;
 };
 
-__attribute__((visibility("hidden")))
-__attribute__((aligned(0x80))) NuGCutSceneSysBackgroundData gNuGCutSceneSysBackgroundData;
+__attribute__((visibility("hidden"))) NuGCutSceneSysData* g_pNuGCutSceneSysData;
 
-void NuGCutSceneSysBackgroundFlush() {
-    gNuGCutSceneSysBackgroundData.load = nullptr;
+void NuGCutSceneSysInitMemoryManager(MemoryManager* mgr) {
+    g_pNuGCutSceneSysData->memoryManager = mgr;
 }
