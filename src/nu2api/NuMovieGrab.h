@@ -1,24 +1,14 @@
-#ifndef NU2API_NU_MOVIE_GRAB_H
-#define NU2API_NU_MOVIE_GRAB_H
+#ifndef NU2API_NUMOVIEGRAB_H
+#define NU2API_NUMOVIEGRAB_H
 
-struct numoviegrabconfig_s {
-    float field_0;
-    int field_4;
-    float field_8;
-    int field_C;
-    int field_10;
+struct numoviegrabinfo_s {
+    char pad[20];
     int startFrameTemp;
     int startFrameCfg;
     int endFrameTemp;
     int endFrameCfg;
-    float startTimeTemp;
-    float startTimeCfg;
-    float endTimeTemp;
-    float endTimeCfg;
 };
 
-__attribute__((visibility("hidden"))) extern numoviegrabconfig_s g_NuMovieGrabConfig;
+float NuMovieGrabGetStartFrameTemp();
 
-void NuMovieGrabSetStartFrameTemp(int startFrame);
-
-#endif
+#endif  // NU2API_NUMOVIEGRAB_H
