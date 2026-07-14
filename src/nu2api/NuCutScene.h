@@ -1,7 +1,9 @@
 #pragma once
 
 struct NuCutSceneRaw;
+struct NuANI4AnimRaw;
+struct NuCutSceneRawCharExtra;
+struct instNUGCUTCHAR_s;
 
-extern void (*NuCutSceneDestroyCharacters)(NuCutSceneRaw*);
-
-void NuSetCutSceneDestroyCharactersFn(void (*fn)(NuCutSceneRaw*));
+void NuSetCutSceneCharacterDestroyDataFn(void (*fn)(NuCutSceneRaw*, NuANI4AnimRaw*, NuCutSceneRawCharExtra*,
+                                                    instNUGCUTCHAR_s*));
