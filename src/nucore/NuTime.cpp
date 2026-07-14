@@ -1,16 +1,10 @@
-#include "nucore/NuTime.h"
+struct NuTime {
+    char pad[0x1670];
+    bool disableMaxFrameTimeClamping;
+};
 
-NuTimeData nuapi;
+extern NuTime g_NuTime;
 
-float NuTimeGetFrameTime() {
-    return nuapi.frameTime;
-}
-
-void NuTimeForceFrameTime(float) {
-}
-
-void NuTimeLockFrameTime(int) {
-}
-
-void NuTimeDisableMaxFrameTimeClamping(bool) {
+void NuTimeDisableMaxFrameTimeClamping(bool flag) {
+    g_NuTime.disableMaxFrameTimeClamping = flag;
 }
