@@ -1,14 +1,7 @@
-struct instNUGCUTSCENE;
-struct NuCutSceneRaw;
-struct NuANI4AnimRaw;
+#include "nu3d/NuCutScene.h"
 
-using NuCutSceneCharacterRenderFn
-    = void (*)(int, instNUGCUTSCENE*, NuCutSceneRaw*, float, int, NuANI4AnimRaw*);
+void (*NuCutSceneResetCharactersFn)(instNUGCUTSCENE*);
 
-extern NuCutSceneCharacterRenderFn NuCutSceneCharacterRender;
-
-void NuSetCutSceneCharacterRenderFn(NuCutSceneCharacterRenderFn fn) {
-    NuCutSceneCharacterRender = fn;
+void NuSetCutSceneResetCharactersFn(void (*fn)(instNUGCUTSCENE*)) {
+    NuCutSceneResetCharactersFn = fn;
 }
-
-NuCutSceneCharacterRenderFn NuCutSceneCharacterRender = nullptr;
