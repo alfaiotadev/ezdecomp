@@ -1,5 +1,6 @@
-__attribute__((visibility("hidden"))) float* qfontLenScale;
+#include "numath/types.h"
+#include <string.h>
 
-float NuQFntLenScale() {
-    return *qfontLenScale;
+void NuQFntSetMtxRS(void* obj, NUMTX const* mtx) {
+    memcpy(((char*)*(void**)((char*)obj + 0x80)) + 0x10, mtx, sizeof(NUMTX));
 }
