@@ -53,3 +53,9 @@ bool NuLanguageConsoleSelectable(bool* availableLangs) {
     }
     return !availableLangs[16];
 }
+
+__attribute__((visibility("hidden"))) const char** g_NuCrashDumpId;
+
+const char* NuCrashDumpGetId(void) {
+    return *g_NuCrashDumpId;
+}
