@@ -21,3 +21,13 @@ NUFNT* NuFntCreate(char*, int, int, int, char*) {
 int NuFntGetScreenHeight(NUFNT*) {
     return 1;
 }
+
+struct NUQFNT {
+    int printMode;
+};
+
+NUQFNT* g_NuQFnt __attribute__((__visibility__("hidden"))) __attribute__((__aligned__(4096)));
+
+int NuQFntGetPrintMode(void) {
+    return g_NuQFnt->printMode;
+}
