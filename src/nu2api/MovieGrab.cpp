@@ -1,7 +1,21 @@
 #include "nu2api/MovieGrab.h"
 
-__attribute__((visibility("hidden"))) NuMovieGrabConfig g_NuMovieGrabConfig;
+struct MovieGrabConfig {
+    char pad[20];
+    int startFrameTemp;
+    volatile int startFrameCfg;
+    int endFrameTemp;
+    int endFrameCfg;
+    float startTimeTemp;
+    float startTime;
+    float endTimeTemp;
+    float endTime;
+    float startTimeCfg;
+    float endTimeCfg;
+};
 
-void NuMovieGrabSetEndFrameTemp(int endFrame) {
-    g_NuMovieGrabConfig.endFrameTemp = endFrame;
+static MovieGrabConfig g_movieGrabConfig;
+
+int NuMovieGrabGetStartFrameCfg() {
+    return g_movieGrabConfig.startFrameCfg;
 }
