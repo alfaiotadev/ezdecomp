@@ -22,12 +22,7 @@ int NuFntGetScreenHeight(NUFNT*) {
     return 1;
 }
 
-struct NUQFNT {
-    int printMode;
-};
-
-NUQFNT* g_NuQFnt __attribute__((__visibility__("hidden"))) __attribute__((__aligned__(4096)));
-
-int NuQFntGetPrintMode(void) {
-    return g_NuQFnt->printMode;
+extern float qfnt_height_scale;
+float NuQFntHeightScale() {
+    return qfnt_height_scale;
 }
