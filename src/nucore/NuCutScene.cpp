@@ -1,14 +1,9 @@
-#include "numath/types.h"
+#include "nucore/NuCutScene.h"
 
-struct NuCutSceneRaw;
-struct instNUGCUTSCENE;
-struct NuCutSceneRawRigid;
-struct instNUGCUTRIGID;
-
-void (*NuCutSceneRigidPostRender)(NuCutSceneRaw&, instNUGCUTSCENE&, NuCutSceneRawRigid&, instNUGCUTRIGID&,
-                                  NUMTX&, float);
-
-void NuSetCutSceneRigidPostRenderFn(void (*fn)(NuCutSceneRaw&, instNUGCUTSCENE&, NuCutSceneRawRigid&,
-                                               instNUGCUTRIGID&, NUMTX&, float)) {
-    NuCutSceneRigidPostRender = fn;
+void NuCutSceneRawSwap16(void* ptr) {
+    char* bytes = (char*)ptr;
+    char b0 = bytes[0];
+    char b1 = bytes[1];
+    bytes[0] = b1;
+    bytes[1] = b0;
 }
