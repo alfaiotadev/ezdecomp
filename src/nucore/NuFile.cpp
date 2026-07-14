@@ -1,11 +1,21 @@
 #include "nucore/NuFile.h"
 
-int NuFileExtPlatformBit(int platform) {
-    return 1 << platform;
+class NuFileReadCache {
+public:
+    void CacheFile(const char*);
+};
+
+struct NuFileReadCacheHolder {
+    char pad[0x30];
+    NuFileReadCache cache;
+};
+
+static NuFileReadCacheHolder g_NuFileReadCacheHolder;
+
+void NuFileCacheFile(const char* name) {
+    g_NuFileReadCacheHolder.cache.CacheFile(name);
 }
 
-NuFile::~NuFile() {}
-
-void NuFileClose(NuFile* const& file) {
-    delete file;
+int NuFileExtPlatformBit(int platform) {
+    return 1 << platform;
 }
