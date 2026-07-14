@@ -1,7 +1,7 @@
-#include "nu3d/NuCutScene.h"
+enum CUTSCENESCALEMODE {};
 
-void (*NuCutSceneResetCharactersFn)(instNUGCUTSCENE*);
+extern "C" int cutscenecam_screenscale;
 
-void NuSetCutSceneResetCharactersFn(void (*fn)(instNUGCUTSCENE*)) {
-    NuCutSceneResetCharactersFn = fn;
+void NuGCutSetScaleMode(CUTSCENESCALEMODE mode) {
+    cutscenecam_screenscale = mode;
 }
