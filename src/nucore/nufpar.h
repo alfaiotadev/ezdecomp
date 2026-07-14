@@ -2,6 +2,7 @@
 
 struct nufpar_s {
     void* file;
-    char pad[2352];
-    int pos;
 };
+
+typedef void NuFParErrorProc(nufpar_s*);
+extern NuFParErrorProc* fnInterpreterError;
