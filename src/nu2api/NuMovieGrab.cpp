@@ -1,18 +1,7 @@
-struct numoviegrabinfo_s {
-    char initialised;
-    char pad[3];
-    int baseFrameNumber;
-    int field_8;
-    int field_C;
-    int field_10;
-    int field_14;
-    int outputWidth;
-    int outputHeight;
-};
+#include "nu2api/NuMovieGrab.h"
 
-__attribute__((visibility("hidden"))) numoviegrabinfo_s g_NuMovieGrabInfo;
+__attribute__((visibility("hidden"))) numoviegrabconfig_s g_NuMovieGrabConfig;
 
-void NuMovieGrabSetOutputResolution(int width, int height) {
-    g_NuMovieGrabInfo.outputWidth = width;
-    g_NuMovieGrabInfo.outputHeight = height;
+void NuMovieGrabSetStartFrameTemp(int startFrame) {
+    g_NuMovieGrabConfig.startFrameTemp = startFrame;
 }
