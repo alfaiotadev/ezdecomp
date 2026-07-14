@@ -1,5 +1,12 @@
-extern float TGAFrameStep;
+#include "nu3d/NuGCutScene.h"
 
-float NuGCutSceneGetTGAFrameStep() {
-    return TGAFrameStep;
+struct NuGCutSceneGlobals {
+    int dummy;
+    volatile int baseFrameNumber;
+};
+
+static NuGCutSceneGlobals g_nuGCutSceneGlobals;
+
+int NuGCutSceneGetBaseFrameNumber() {
+    return g_nuGCutSceneGlobals.baseFrameNumber;
 }
