@@ -1,21 +1,16 @@
 struct NuMovieGrabInfo {
-    float field_0;
-    int field_4;
-    float field_8;
-    char pad_12[8];
+    char pad[0x14];
     int startFrameTemp;
     int startFrameCfg;
     int endFrameTemp;
     int endFrameCfg;
-    float startTimeTemp;
     float startTimeCfg;
-    float endTimeTemp;
     float endTimeCfg;
 };
 
-__attribute__((visibility("hidden"))) NuMovieGrabInfo g_NuMovieGrabInfo;
+__attribute__((visibility("hidden"))) NuMovieGrabInfo g_nuMovieGrabInfo;
 
-void NuMovieGrabSetStartFrame(int frame) {
-    g_NuMovieGrabInfo.startFrameTemp = frame;
-    g_NuMovieGrabInfo.startFrameCfg = frame;
+void NuMovieGrabSetEndFrame(int frame) {
+    g_nuMovieGrabInfo.endFrameTemp = frame;
+    g_nuMovieGrabInfo.endFrameCfg = frame;
 }
