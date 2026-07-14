@@ -1,13 +1,13 @@
 #include "nucore/NuFile.h"
 
-extern int g_NuFileSwapEndianOnWrite;
+int NuFile_SwapEndianOnRead;
 
 int NuFileExtPlatformBit(int platform) {
     return 1 << platform;
 }
 
-int NuFileSwapEndianOnWrite(int swap) {
-    int old = g_NuFileSwapEndianOnWrite;
-    g_NuFileSwapEndianOnWrite = swap;
+int NuFileSwapEndianOnRead(int value) {
+    int old = NuFile_SwapEndianOnRead;
+    NuFile_SwapEndianOnRead = value;
     return old;
 }
