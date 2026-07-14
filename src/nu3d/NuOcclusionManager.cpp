@@ -1,7 +1,12 @@
 #include "nu3d/NuOcclusionManager.h"
 
-extern OcclusionManager g_pOcclusionManager;
+struct OcclusionManager {
+    char pad[356];
+    float occluderScreenSpaceThreshold;
+};
 
-void NuOcclusionManagerSetOccluderDotProductThreshold(float threshold) {
-    g_pOcclusionManager.m_occluderDotProductThreshold = threshold;
+extern OcclusionManager g_OcclusionManager;
+
+void NuOcclusionManagerSetOccluderScreenSpaceThreshold(float threshold) {
+    g_OcclusionManager.occluderScreenSpaceThreshold = threshold;
 }
