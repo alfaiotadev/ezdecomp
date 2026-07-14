@@ -10,6 +10,21 @@ struct NuPvsData {
 struct NuPvsZoneBox;
 struct NuPvsCellVolumeUnpacked;
 
+struct NuPvsManager {
+    NuPvsData* activeData;
+};
+
+struct NuPvsState {
+    char pad0[8];
+    NuPvsManager* pvsManager;
+};
+
+__attribute__((visibility("hidden"))) NuPvsState g_pvsState;
+
+NuPvsData* NuPvsGetActiveData() {
+    return g_pvsState.pvsManager->activeData;
+}
+
 int NuPvsGetSizeForBits(unsigned int bits) {
     return (bits >> 3) + 1;
 }
@@ -28,10 +43,6 @@ int NuPvsIsVisible(const NuPvsData*, const NuPvsCellVolumeUnpacked*, int) {
 
 void NuPvsBitArrayZero(unsigned char* arr, unsigned int bits) {
     memset(arr, 0, (bits >> 3) + 1);
-}
-
-void NuPvsBitArrayOne(unsigned char* arr, unsigned int bits) {
-    memset(arr, 0xff, (bits >> 3) + 1);
 }
 
 int NuPvsGetCellIdx(const NuPvsData* data, int i, int j) {
