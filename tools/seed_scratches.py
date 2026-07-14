@@ -180,7 +180,8 @@ def issue_body(symbol, demangled, size, scratch):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=10, help="stop after this many issues created")
-    ap.add_argument("--quality", default="m,M", help="comma-separated quality states to seed (default: m,M)")
+    ap.add_argument("--quality", default="M,U", help="comma-separated quality states to seed (default: M,U). "
+                    "Do NOT seed `m` — it means functionally-identical/irreducible (already optimal, no 100% possible).")
     ap.add_argument("--min-size", type=int, default=16, help="skip functions smaller than this (bytes)")
     ap.add_argument("--max-size", type=int, default=400, help="skip functions larger than this (bytes)")
     ap.add_argument("--u-context-source", help="context .cpp passed to decompme -s (for --quality U; needs the patched decompme that allows U functions)")
