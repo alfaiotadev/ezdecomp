@@ -75,6 +75,8 @@ def main():
         dst = os.path.join(EZ, f)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         shutil.copy2(os.path.join(WS, f), dst)
+        if f.endswith((".cpp", ".h", ".hpp", ".c", ".cc")):
+            sh(["clang-format", "-i", dst])  # keep the lint gate green
         sh(["git", "-C", EZ, "add", f])
     if sh(["git", "-C", EZ, "diff", "--cached", "--quiet"]).returncode == 0:
         sys.exit("no net change vs ezdecomp/main (already landed?)")

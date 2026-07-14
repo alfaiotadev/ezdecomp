@@ -21,7 +21,10 @@ on:
 
 jobs:
   compile:
-    runs-on: ubuntu-latest
+    # native arm64 runner: matches the aarch64 toolchain the project builds with (the
+    # x86_64 toolchain's ld.lld fails the shared-lib link silently). Public repos get
+    # free arm64 runners.
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Check out project
         uses: actions/checkout@v4

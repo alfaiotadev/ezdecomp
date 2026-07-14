@@ -1,6 +1,5 @@
-# clang-format lint (GitHub Actions, public).
-#
-# Runs clang-format v20 directly over src/. Matches the repo's .clang-format.
+# clang-format lint (GitHub Actions, public) — checks only the files changed by the
+# push/PR (the whole legacy tree isn't fully formatted; contributions must be).
 
 on: [push, pull_request]
 
@@ -9,16 +8,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Ensure clang-format 20
         run: command -v clang-format >/dev/null || pip3 install --break-system-packages "clang-format~=20.1"
 
-      - name: Check formatting
+      - name: Check formatting (changed files)
         run: |
           set -euo pipefail
-          files=$(find src -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \))
-          if [ -z "$files" ]; then
-            echo "No source files to check."
-            exit 0
+          base="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$base" 2>/dev/null; then
+            base="$(git rev-parse HEAD~1 2>/dev/null || true)"
           fi
+          if [ -n "$base" ]; then
+            files=$(git diff --name-only "$base" HEAD -- 'src/**/*.c' 'src/**/*.cpp' 'src/**/*.h' 'src/**/*.hpp' || true)
+          else
+            files=""
+          fi
+          if [ -z "$files" ]; then echo "No changed source files to check."; exit 0; fi
+          echo "Checking:"; echo "$files"
           echo "$files" | xargs clang-format --dry-run --Werror
