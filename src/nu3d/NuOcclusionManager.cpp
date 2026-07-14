@@ -1,11 +1,7 @@
 #include "nu3d/NuOcclusionManager.h"
 
-struct OcclusionManager {
-    bool m_bInitialised;
-};
+extern OcclusionManager g_pOcclusionManager;
 
-__attribute__((visibility("hidden"))) OcclusionManager* g_pOcclusionManager;
-
-bool NuOcclusionManagerIsInitialised() {
-    return g_pOcclusionManager->m_bInitialised;
+void NuOcclusionManagerSetOccluderDotProductThreshold(float threshold) {
+    g_pOcclusionManager.m_occluderDotProductThreshold = threshold;
 }
