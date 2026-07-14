@@ -1,0 +1,36 @@
+# /claim bot — a contributor comments `/claim` on an open function issue to claim it.
+# Assigns them, flips `open` -> `claimed`, and confirms. Serverless (no polling).
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+
+jobs:
+  claim:
+    # only on real issues (not PRs), only when the comment starts with /claim
+    if: >-
+      github.event.issue.pull_request == null &&
+      startsWith(github.event.comment.body, '/claim')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const n = context.issue.number;
+            const u = context.payload.comment.user.login;
+            const repo = context.repo;
+            const labels = context.payload.issue.labels.map(l => l.name);
+            if (context.payload.issue.state !== 'open') return;
+            if (labels.includes('claimed')) {
+              await github.rest.issues.createComment({...repo, issue_number: n,
+                body: `⚠️ Already claimed. If it's stale, a maintainer can reassign it.`});
+              return;
+            }
+            await github.rest.issues.addAssignees({...repo, issue_number: n, assignees: [u]});
+            await github.rest.issues.addLabels({...repo, issue_number: n, labels: ['claimed']});
+            try { await github.rest.issues.removeLabel({...repo, issue_number: n, name: 'open'}); } catch (e) {}
+            await github.rest.issues.createComment({...repo, issue_number: n,
+              body: `🔒 Claimed by @${u}. Open its decomp.me scratch, match it to 100%, and open a PR that says \`Closes #${n}\` with the scratch link. Thanks!`});

@@ -2,15 +2,17 @@
 """
 gen_progress_json.py — emit a compact progress summary for the GitHub Pages dashboard.
 
-Pure function of committed repo state (data/lcuswitch_functions.csv + its git history) —
-no build, no binary. Writes docs/progress.json:
+Pure function of committed repo state (data/lcuswitch_functions.csv + its git history
++ data/symbol_subsystems.json) — no build, no binary. Writes docs/progress.json:
   generated, total_n/total_b, matched_n/matched_b, inprogress_n, pct_fn, pct_code,
   series [[date, cumulative_matched]...],
-  families [{key,label,color,matched,total}...]  (matched-O split by subsystem/family),
-  calendar {days:[[date,count]...], total, streak, max}  (functions matched per day),
-  contributors [{name, count}...]  (git commit authors)
+  families [{key,label,color,matched}...]  (matched-O split by real src subsystem),
+  calendar {days:[[date,count]...], total, streak, max}, contributors [{name,count}...]
+
+data/symbol_subsystems.json (symbol -> src subsystem dir) is generated in the
+devcontainer with `nm` over build objects (accurate); regenerate occasionally.
 """
-import datetime, json, os, re, subprocess
+import datetime, json, os, subprocess
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV = os.path.join(REPO, "data", "lcuswitch_functions.csv")
@@ -18,38 +20,37 @@ CSV_REL = "data/lcuswitch_functions.csv"
 MATCHED = {"O"}
 INPROGRESS = {"M", "m"}
 
-# (key, label, color, ordered regexes tried against the leading identifier)
-FAMILIES = [
-    ("numath",  "Math",      "#58a6ff", r"^Nu(Vec|Mtx|Quat|Ang|Pln|Math|Misc|Equiv|Pow|Lerp|Rand|Interp|Clamp|Sqrt|Trig|Fix)"),
-    ("render",  "Render/3D", "#f0883e", r"^Nu(Render|Display|Pvs|Tex|Portal|Occlusion|Mtl|Viewport|Video|Movie|Anim|Draw|Scene|Light|Cam|Mesh|Model|Gfx|2d|3d)"),
-    ("nucore",  "Core",      "#a371f7", r"^Nu(File|Str|String|Thread|CheckSum|Serialize|Locale|Fpar|Sys|Time|Load|Input|Pad|Mem|Table|Heap|Sound|Audio)"),
-    ("kestrel", "Scripting", "#3fb950", r"^(SAction|CharacterAction|VehicleAction|.*Action$|SVar|Script|Flow)"),
-    ("legoapi", "Game API",  "#db61a2", r"^(Api|Options|Score|Lego|Mech|City|Player|Vehicle|Character|Mission|Objective|HUD|UI)"),
-]
-OTHER = ("other", "Other", "#8b949e")
+# real src subsystem dir -> (family key, label, color)
+SUB2FAM = {
+    "kestrel": ("kestrel", "Scripting", "#3fb950"),
+    "numath":  ("numath",  "Math",      "#58a6ff"),
+    "nucore":  ("nucore",  "Core",      "#a371f7"),
+    "legoapi": ("game",    "Game API",  "#db61a2"), "legogame": ("game", "Game API", "#db61a2"),
+    "nu2api":  ("render",  "Render/3D", "#f0883e"), "nu3d": ("render", "Render/3D", "#f0883e"),
+    "chroma":  ("render",  "Render/3D", "#f0883e"),
+    "support": ("tools",   "Support/Tools", "#e3b341"), "edlevel": ("tools", "Support/Tools", "#e3b341"),
+    "edtools": ("tools",   "Support/Tools", "#e3b341"), "(root)":  ("tools", "Support/Tools", "#e3b341"),
+}
+FAM_ORDER = [("kestrel", "Scripting", "#3fb950"), ("numath", "Math", "#58a6ff"),
+             ("nucore", "Core", "#a371f7"), ("game", "Game API", "#db61a2"),
+             ("render", "Render/3D", "#f0883e"), ("tools", "Support/Tools", "#e3b341"),
+             ("other", "Other", "#8b949e")]
+
+SUBMAP = {}
+try:
+    SUBMAP = json.load(open(os.path.join(REPO, "data", "symbol_subsystems.json")))
+except Exception:
+    pass
 
 
-def leading_ident(mangled):
-    # _ZN<len><name>...  (member: class) OR  _Z<len><name>...  (free function)
-    m = re.match(r"^_ZN?(\d+)(.+)$", mangled)
-    if not m:
-        return mangled
-    n = int(m.group(1))
-    return m.group(2)[:n]
-
-
-def classify(mangled):
-    ident = leading_ident(mangled)
-    for key, _, _, rx in FAMILIES:
-        if re.search(rx, ident):
-            return key
-    return OTHER[0]
+def fam_of(symbol):
+    sub = SUBMAP.get(symbol)
+    return SUB2FAM[sub][0] if sub in SUB2FAM else "other"
 
 
 def collect():
     total_n = total_b = o_n = o_b = p_n = 0
-    fam = {k: [0, 0] for k, *_ in FAMILIES}
-    fam[OTHER[0]] = [0, 0]
+    matched_by_fam = {}
     with open(CSV) as f:
         next(f)
         for line in f:
@@ -63,28 +64,20 @@ def collect():
                 b = 0
             total_n += 1
             total_b += b
-            if not name:
-                continue
-            k = classify(name)
-            fam[k][1] += 1
             if q in MATCHED:
                 o_n += 1
                 o_b += b
-                fam[k][0] += 1
+                if name:
+                    k = fam_of(name)
+                    matched_by_fam[k] = matched_by_fam.get(k, 0) + 1
             elif q in INPROGRESS:
                 p_n += 1
-    families = []
-    for key, label, color, _ in FAMILIES + [(OTHER[0], OTHER[1], OTHER[2], None)]:
-        matched, tot = fam[key]
-        if matched or tot:
-            families.append({"key": key, "label": label, "color": color,
-                             "matched": matched, "total": tot})
-    families.sort(key=lambda x: -x["matched"])
+    families = [{"key": k, "label": lab, "color": col, "matched": matched_by_fam[k]}
+                for k, lab, col in FAM_ORDER if matched_by_fam.get(k)]
     return total_n, total_b, o_n, o_b, p_n, families
 
 
 def cumulative_by_day():
-    """[(iso_date, cumulative_O)] for days the O-count changed, from the CSV git history."""
     try:
         log = subprocess.run(["git", "-C", REPO, "log", "--format=%cs %H", "--", CSV_REL],
                              capture_output=True, text=True).stdout
@@ -108,18 +101,12 @@ def cumulative_by_day():
 
 
 def calendar(cum):
-    """Per-day NEW matches (deltas), excluding the initial import (baseline = first
-    commit's O count). Returns {days, total, streak, max}."""
     if len(cum) < 2:
         return {"days": [], "total": 0, "streak": 0, "max": 0}
-    days = []
-    for i in range(1, len(cum)):
-        d = cum[i][1] - cum[i - 1][1]
-        if d > 0:
-            days.append([cum[i][0], d])
+    days = [[cum[i][0], cum[i][1] - cum[i - 1][1]] for i in range(1, len(cum))
+            if cum[i][1] - cum[i - 1][1] > 0]
     total = sum(d for _, d in days)
     mx = max((d for _, d in days), default=0)
-    # streak: consecutive calendar days up to the latest active day
     streak = 0
     if days:
         have = {datetime.date.fromisoformat(d) for d, _ in days}
@@ -141,8 +128,7 @@ def contributors():
         name = name.strip()
         if name:
             counts[name] = counts.get(name, 0) + 1
-    top = sorted(counts.items(), key=lambda x: -x[1])[:8]
-    return [{"name": n, "count": c} for n, c in top]
+    return [{"name": n, "count": c} for n, c in sorted(counts.items(), key=lambda x: -x[1])[:8]]
 
 
 def main():
@@ -165,8 +151,8 @@ def main():
     out = os.path.join(REPO, "docs", "progress.json")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     json.dump(data, open(out, "w"), separators=(",", ":"))
-    print("wrote %s (%d/%d matched, %.2f%%, %d families, %d contributors)"
-          % (out, o_n, total_n, data["pct_fn"], len(families), len(data["contributors"])))
+    print("wrote %s (%d/%d matched, %.2f%%, %d families, map=%d syms)"
+          % (out, o_n, total_n, data["pct_fn"], len(families), len(SUBMAP)))
 
 
 if __name__ == "__main__":

@@ -14,7 +14,12 @@
     font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   .wrap{max-width:900px;margin:0 auto;padding:48px 20px 64px}
   h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
-  .sub{color:var(--muted);margin:0 0 32px;font-size:14px}
+  .sub{color:var(--muted);margin:0 0 14px;font-size:14px}
+  .updated{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:12.5px;
+    background:var(--track);border:1px solid var(--border);border-radius:20px;padding:5px 13px;margin:0 0 30px}
+  .updated .pulse{width:7px;height:7px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 0 0 rgba(63,185,80,.5);animation:p 2.4s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}70%{box-shadow:0 0 0 6px rgba(63,185,80,0)}100%{box-shadow:0 0 0 0 rgba(63,185,80,0)}}
   .hero{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:28px 28px 24px;margin-bottom:20px}
   .pct{font-size:56px;font-weight:700;line-height:1;letter-spacing:-.02em}
   .pct small{font-size:20px;color:var(--muted);font-weight:500;margin-left:8px}
@@ -60,6 +65,7 @@
 <div class="wrap">
   <h1>LEGO City Undercover — Decompilation Progress</h1>
   <p class="sub">Nintendo Switch · EU v1.0.3 · clean-room matching decompilation · byte-for-byte verified</p>
+  <div class="updated" id="updated"><span class="pulse"></span>Loading latest data…</div>
 
   <div class="hero">
     <div class="pct"><span id="pctfn">—</span>%<small>of functions matched</small></div>
@@ -129,6 +135,7 @@ fetch('progress.json?_=' + Date.now()).then(r => r.json()).then(d => {
   el('wip').textContent = fmt(d.inprogress_n);
   el('remaining').textContent = fmt(d.total_n - d.matched_n - d.inprogress_n);
   requestAnimationFrame(() => { el('barfn').style.width = Math.max(d.pct_fn, 0.5) + '%'; });
+  el('updated').innerHTML = '<span class="pulse"></span>Data updated ' + (d.generated || '—');
   if (d.generated) el('gen').textContent = 'Auto-generated ' + d.generated;
 
   // segmented families
@@ -138,7 +145,7 @@ fetch('progress.json?_=' + Date.now()).then(r => r.json()).then(d => {
     `<span title="${f.label}: ${fmt(f.matched)}" style="background:${f.color};flex-grow:${f.matched}"></span>`).join('');
   el('legend').innerHTML = fam.map(f =>
     `<div class="it"><div class="lab"><span class="dot" style="background:${f.color}"></span>${f.label}</div>`
-    + `<div class="v">${fmt(f.matched)} <small>/ ${fmt(f.total)}</small></div></div>`).join('');
+    + `<div class="v">${fmt(f.matched)} <small>matched</small></div></div>`).join('');
 
   // contribution calendar (last ~18 weeks ending today)
   const cal = d.calendar || {days: []};

@@ -48,14 +48,18 @@ done=set()
 try:
     done={l.strip() for l in open(os.environ["ATTEMPTED"]) if l.strip()}
 except FileNotFoundError: pass
-# CSV quality per symbol (skip m = irreducible/done, O = matched)
-qual={}
+# CSV quality + size per symbol (skip m = irreducible/done, O = matched)
+qual={}; size={}
 for ln in open("/workspace/data/lcuswitch_functions.csv"):
     p=ln.rstrip("\n").split(",")
-    if len(p)>=4: qual[p[3]]=p[1]
+    if len(p)>=4:
+        qual[p[3]]=p[1]
+        try: size[p[3]]=int(p[2])
+        except ValueError: size[p[3]]=0
 d=json.load(urllib.request.urlopen(urllib.request.Request(
- "https://api.github.com/repos/alfaiotadev/ezdecomp/issues?state=open&labels=open&sort=created&direction=asc&per_page=100",
+ "https://api.github.com/repos/alfaiotadev/ezdecomp/issues?state=open&labels=open&per_page=100",
  headers={"Authorization":"Bearer "+tok,"User-Agent":"crowd","Accept":"application/vnd.github+json"})))
+cands=[]
 for it in d:
     if "pull_request" in it: continue
     if str(it["number"]) in done: continue
@@ -64,7 +68,11 @@ for it in d:
     sym=m.group(1)
     if qual.get(sym) not in ("U","M"):   # skip irreducible m / already-O / unknown
         continue
-    print(it["number"], sym); break
+    cands.append((size.get(sym,1<<30), it["number"], sym))
+if cands:
+    cands.sort()                          # smallest function first = easy-first throughput
+    _,num,sym=cands[0]
+    print(num, sym)
 PY
 }
 
