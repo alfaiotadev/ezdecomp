@@ -1,7 +1,14 @@
-extern "C" {
-int (*NuCutSceneSFXFixUp)(char*) = 0;
-}
+#include "numath/types.h"
 
-void NuSetCutSceneSFXFixUpFn(int (*f)(char*)) {
-    NuCutSceneSFXFixUp = f;
+struct NuCutSceneRaw;
+struct NuCutSceneRawLocatorSys;
+struct instNUGCUTLOCATOR_s;
+struct NuCutSceneRawLocator;
+
+extern void (*NuCutSceneSFXUpdate)(NuCutSceneRaw*, NuCutSceneRawLocatorSys*, instNUGCUTLOCATOR_s*,
+                                   NuCutSceneRawLocator*, float, NUMTX*, int);
+
+void NuSetCutSceneSFXUpdateFn(void (*fn)(NuCutSceneRaw*, NuCutSceneRawLocatorSys*, instNUGCUTLOCATOR_s*,
+                                         NuCutSceneRawLocator*, float, NUMTX*, int)) {
+    NuCutSceneSFXUpdate = fn;
 }
