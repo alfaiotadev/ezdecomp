@@ -72,6 +72,7 @@ cands=[]
 for it in d:
     if "pull_request" in it: continue
     if str(it["number"]) in done: continue
+    if any(l["name"]=="hard-tail" for l in it.get("labels",[])): continue  # skip known-hard
     m=re.search(r"\*\*Symbol:\*\*\s*`(_Z[\w.]+)`", it.get("body") or "")
     if not m: continue
     sym=m.group(1)
@@ -119,7 +120,11 @@ while [ "$n" -lt "$MAX" ]; do
       echo "   crowdship failed (see log)"
     fi
   else
-    echo "   not matched — leaving issue open, moving on"
+    echo "   not matched — labelling hard-tail (skipped in future runs)"
+    curl -s -o /dev/null -X POST \
+      -H "Authorization: Bearer $TOK" -H "Accept: application/vnd.github+json" \
+      "https://api.github.com/repos/$REPO/issues/$ISSUE/labels" \
+      -d '{"labels":["hard-tail"]}' 2>/dev/null || true
   fi
   # reset tree for the next issue: revert tracked edits AND remove any NEW untracked
   # src files the agent created (they've been landed on ezdecomp already).
