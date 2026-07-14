@@ -2,6 +2,6 @@
 
 struct nufpar_s {
     void* file;
-    char pad[0xAC0];
-    int comcnt;
+    char pad[2352];
+    int pos;
 };
