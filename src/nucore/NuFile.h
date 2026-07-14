@@ -1,8 +1,4 @@
 #pragma once
 
 int NuFileExtPlatformBit(int platform);
-
-class NuFile {
-public:
-    virtual ~NuFile();
-};
+void NuFileCacheFile(const char* name);
