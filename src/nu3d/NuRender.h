@@ -9,5 +9,5 @@ struct NUCOLOUR3 {
     float b;
 };
 
+void NuRndrSetParticleRotation(NUMTX* rotation);
 void NuDrawBounds(const NuVector3Base& min, const NuVector3Base& max, NUMTX* mtx, NUCOLOUR3 const& colour);
-int NuRndrWasDrawnUnreflectedGobj();

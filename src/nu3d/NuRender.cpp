@@ -1,9 +1,14 @@
 #include "nu3d/NuRender.h"
 
-void NuDrawBounds(const NuVector3Base&, const NuVector3Base&, NUMTX*, NUCOLOUR3 const&) {}
+struct NuRndrParticleState {
+    char pad[32];
+    NUMTX* particleRotation;
+};
 
-int g_CommandBuffer[2];
+static NuRndrParticleState g_NuRndrParticleState;
 
-int NuRndrWasDrawnUnreflectedGobj() {
-    return g_CommandBuffer[0];
+void NuRndrSetParticleRotation(NUMTX* rotation) {
+    g_NuRndrParticleState.particleRotation = rotation;
 }
+
+void NuDrawBounds(const NuVector3Base&, const NuVector3Base&, NUMTX*, NUCOLOUR3 const&) {}
