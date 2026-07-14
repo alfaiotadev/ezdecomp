@@ -1,3 +1,3 @@
 #pragma once
 
-void NuSetCutsceneMotionBlurCameraExposure(float exposure);
+void NuSetMotionBlurCameraExposure(float exposure);

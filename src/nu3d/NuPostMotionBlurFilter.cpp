@@ -1,5 +1,8 @@
-extern float g_cutsceneMotionBlurCharacterExposure;
+#include "nu3d/NuPostMotionBlurFilter.h"
 
-void NuSetCutsceneMotionBlurCharacterExposure(float exposure) {
-    g_cutsceneMotionBlurCharacterExposure = exposure < 0.0f ? 0.0f : exposure;
+__attribute__((visibility("hidden"))) float* g_pNuMotionBlurCameraExposure;
+
+void NuSetMotionBlurCameraExposure(float exposure) {
+    exposure = exposure < 0.0f ? 0.0f : exposure;
+    *g_pNuMotionBlurCameraExposure = exposure;
 }
