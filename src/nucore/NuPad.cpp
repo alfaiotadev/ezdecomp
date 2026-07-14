@@ -1,5 +1,5 @@
-extern int g_NuPadMaxGamePads;
+int g_NuPadMaxGamePads;
 
-int NuPadGetMaxGamePads(void) {
-    return g_NuPadMaxGamePads;
+void NuPadSetMaxGamePads(int max) {
+    g_NuPadMaxGamePads = max;
 }
