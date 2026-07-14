@@ -1,7 +1,14 @@
+#include "numath/types.h"
+
+struct NuCutSceneRaw;
 struct instNUGCUTSCENE;
+struct NuCutSceneRawRigid;
+struct instNUGCUTRIGID;
 
-extern void (*NuCutSceneRequestSFX)(instNUGCUTSCENE*);
+void (*NuCutSceneRigidPostRender)(NuCutSceneRaw&, instNUGCUTSCENE&, NuCutSceneRawRigid&, instNUGCUTRIGID&,
+                                  NUMTX&, float);
 
-void NuSetCutSceneRequestSFXFn(void (*fn)(instNUGCUTSCENE*)) {
-    NuCutSceneRequestSFX = fn;
+void NuSetCutSceneRigidPostRenderFn(void (*fn)(NuCutSceneRaw&, instNUGCUTSCENE&, NuCutSceneRawRigid&,
+                                               instNUGCUTRIGID&, NUMTX&, float)) {
+    NuCutSceneRigidPostRender = fn;
 }
