@@ -1,5 +1,5 @@
-extern "C" float nuqfnt_space_width;
+__attribute__((visibility("hidden"))) float* qfontLenScale;
 
-void NuQFntSetSpaceWidth(void* /*unused*/, float width) {
-    nuqfnt_space_width = width;
+float NuQFntLenScale() {
+    return *qfontLenScale;
 }
