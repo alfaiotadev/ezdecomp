@@ -22,6 +22,15 @@ ITER_TIMEOUT="${CROWD_ITER_TIMEOUT:-30m}"
 LOGDIR="${CROWD_LOG_DIR:-$HOME/crowd-loop-logs}"; mkdir -p "$LOGDIR"
 ATTEMPTED="$LOGDIR/attempted.txt"; : > "$ATTEMPTED"
 export LIBCLANG_PATH="${LIBCLANG_PATH:-/usr/lib/aarch64-linux-gnu}"
+# auto-reseed: when the board drains, seed a fresh U batch and keep going (hands-off flywheel)
+RESEED="${CROWD_RESEED:-1}"
+RESEED_BATCH="${CROWD_RESEED_BATCH:-25}"
+RESEED_MAX="${CROWD_RESEED_MAX:-40}"
+UMBRELLA="${CROWD_UMBRELLA:-/home/decomp/umbrella_engine.cpp}"
+SEED_FILTER="${CROWD_SEED_FILTER:-^_Z[0-9]+Nu}"
+SEED_MIN="${CROWD_SEED_MIN:-16}"; SEED_MAX="${CROWD_SEED_MAX:-300}"
+SEEDER="${CROWD_SEEDER:-/home/decomp/seed_scratches.py}"
+reseeds=0
 
 set -a; . "$WS/.env" 2>/dev/null; set +a
 TOK="${ALFAIOTADEV_GH_PAT:-${GITHUB_TOKEN:-}}"
@@ -80,7 +89,21 @@ echo "=== crowd-autoloop | model=$MODEL | cap=$MAX | timeout=$ITER_TIMEOUT ==="
 n=0
 while [ "$n" -lt "$MAX" ]; do
   read -r ISSUE SYM < <(fetch_issue) || true
-  if [ -z "${SYM:-}" ]; then echo "no more open issues with a symbol — done."; break; fi
+  if [ -z "${SYM:-}" ]; then
+    if [ "$RESEED" = 1 ] && [ "$reseeds" -lt "$RESEED_MAX" ] && [ -f "$SEEDER" ]; then
+      reseeds=$((reseeds + 1))
+      echo "-- board drained — auto-reseed #$reseeds/$RESEED_MAX (batch $RESEED_BATCH)"
+      python3 /home/decomp/ensure_umbrella_ctx.py >/dev/null 2>&1 || true
+      GITHUB_TOKEN="$TOK" python3 "$SEEDER" --quality U --u-context-source "$UMBRELLA" \
+        --name-filter "$SEED_FILTER" --min-size "$SEED_MIN" --max-size "$SEED_MAX" \
+        --limit "$RESEED_BATCH" >> "$LOGDIR/reseed-$reseeds.log" 2>&1 || true
+      git -C "$WS" checkout -- . 2>/dev/null || true
+      read -r ISSUE SYM < <(fetch_issue) || true
+      if [ -z "${SYM:-}" ]; then echo "auto-reseed produced no new matchable issues — exhausted, stopping."; break; fi
+    else
+      echo "no more open issues with a symbol — done."; break
+    fi
+  fi
   n=$((n+1))
   echo "$ISSUE" >> "$ATTEMPTED"
   ts=$(date +%Y%m%d-%H%M%S); log="$LOGDIR/issue-$ISSUE-$ts.log"
