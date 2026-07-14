@@ -1,5 +1,5 @@
-extern "C" int NuQFntMode;
+extern "C" float nuqfnt_space_width;
 
-void NuQFntSetPrintMode(int mode) {
-    NuQFntMode = mode;
+void NuQFntSetSpaceWidth(void* /*unused*/, float width) {
+    nuqfnt_space_width = width;
 }
