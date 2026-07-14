@@ -90,6 +90,9 @@ while [ "$n" -lt "$MAX" ]; do
   else
     echo "   not matched — leaving issue open, moving on"
   fi
-  git checkout -- . 2>/dev/null || true   # reset tree for the next issue
+  # reset tree for the next issue: revert tracked edits AND remove any NEW untracked
+  # src files the agent created (they've been landed on ezdecomp already).
+  git checkout -- . 2>/dev/null || true
+  git clean -fdq -- src/ 2>/dev/null || true
 done
 echo "=== crowd-autoloop done: attempted $n issue(s) ==="
