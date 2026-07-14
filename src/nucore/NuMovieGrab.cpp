@@ -1,18 +1,20 @@
+#include "NuMovieGrab.h"
+
 struct NuMovieGrabConfig {
     char pad0[20];
     int startFrameTemp;
-    int startFrame;
+    int startFrameCfg;
     int endFrameTemp;
-    int endFrame;
+    int endFrameCfg;
     float startTimeTemp;
-    float startTime;
+    float startTimeCfg;
     float endTimeTemp;
-    float endTime;
+    float endTimeCfg;
 };
 
 __attribute__((visibility("hidden"))) NuMovieGrabConfig g_NuMovieGrabConfig;
 
-void NuMovieGrabSetStartTime(float startTime) {
-    g_NuMovieGrabConfig.startTimeTemp = startTime;
-    g_NuMovieGrabConfig.startTime = startTime;
+void NuMovieGrabSetEndTime(float endTime) {
+    g_NuMovieGrabConfig.endTimeTemp = endTime;
+    g_NuMovieGrabConfig.endTimeCfg = endTime;
 }
