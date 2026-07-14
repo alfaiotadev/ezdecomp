@@ -1,3 +1,6 @@
-#pragma once
+#ifndef NUCORE_NUMOVIEGRAB_H
+#define NUCORE_NUMOVIEGRAB_H
 
-void NuMovieGrabSetEndTimeTemp(float value);
+float NuMovieGrabGetEndTimeCfg();
+
+#endif

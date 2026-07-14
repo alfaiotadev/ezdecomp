@@ -1,19 +1,19 @@
 #include "nucore/NuMovieGrab.h"
 
 struct numoviegrabinfo_s {
-    char pad[20];
+    char pad[0x14];
     int startFrameTemp;
     int startFrameCfg;
     int endFrameTemp;
     int endFrameCfg;
     float startTimeTemp;
-    float startTime;
+    float startTimeCfg;
     float endTimeTemp;
-    float endTime;
+    float endTimeCfg;
 };
 
-__attribute__((visibility("hidden"))) numoviegrabinfo_s g_movieGrabInfo;
+__attribute__((visibility("hidden"))) numoviegrabinfo_s g_NuMovieGrabInfo;
 
-void NuMovieGrabSetEndTimeTemp(float value) {
-    g_movieGrabInfo.endTimeTemp = value;
+float NuMovieGrabGetEndTimeCfg() {
+    return g_NuMovieGrabInfo.endTimeCfg;
 }
