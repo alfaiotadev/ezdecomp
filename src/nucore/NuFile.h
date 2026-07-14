@@ -1,4 +1,4 @@
 #pragma once
 
 int NuFileExtPlatformBit(int platform);
-int NuFileSwapEndianOnWrite(int swap);
+int NuFileSwapEndianOnRead(int value);
