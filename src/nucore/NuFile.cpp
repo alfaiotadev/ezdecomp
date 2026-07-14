@@ -1,11 +1,16 @@
 #include "nucore/NuFile.h"
 
-__attribute__((visibility("hidden"))) int* this_platformClass;
+class NuFileDevice {
+public:
+    char pad[0x50];
+    char current_directory[256];
+    static NuFileDevice* sm_DefaultDevice;
+};
 
 int NuFileExtPlatformBit(int platform) {
     return 1 << platform;
 }
 
-int NuGetCurrPlatformClass() {
-    return *this_platformClass;
+char* NuFileGetCurrentDirectory() {
+    return NuFileDevice::sm_DefaultDevice->current_directory;
 }

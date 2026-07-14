@@ -1,4 +1,4 @@
 #pragma once
 
 int NuFileExtPlatformBit(int platform);
-int NuGetCurrPlatformClass();
+char* NuFileGetCurrentDirectory();
