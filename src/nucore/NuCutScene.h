@@ -1,5 +1,9 @@
 #pragma once
 
-struct NuCutSceneRaw;
+#include "numath/types.h"
 
-void NuSetCutSceneFindCharactersFn(void (*param_1)(NuCutSceneRaw*, void*));
+struct NuCutSceneRawRigid;
+
+extern void (*NuCutSceneRigidCollisionCheck)(NuCutSceneRawRigid*, NUMTX*);
+
+void NuSetCutSceneRigidCollisionCheckFn(void (*fn)(NuCutSceneRawRigid*, NUMTX*));
