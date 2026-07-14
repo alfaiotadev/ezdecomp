@@ -1,7 +1,5 @@
-#include "nu3d/NuRndr.h"
+int nurndr_globalframecountpause;
 
-extern int g_NuRndrFrameCount;
-
-int NuRndrGlobalFrameCount() {
-    return g_NuRndrFrameCount;
+void NuRndrGlobalFrameCountPause(int a) {
+    nurndr_globalframecountpause = a;
 }
