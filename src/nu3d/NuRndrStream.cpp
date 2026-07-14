@@ -1,7 +1,5 @@
-#include <cstdint>
+__attribute__((visibility("hidden"))) int* g_lastUsed;
 
-__attribute__((visibility("hidden"))) int* g_pNuRndrStreamTotalSize;
-
-int NuRndrStreamGetTotalSize() {
-    return *g_pNuRndrStreamTotalSize;
+int NuRndrStreamGetLastUsed(void) {
+    return *g_lastUsed;
 }
