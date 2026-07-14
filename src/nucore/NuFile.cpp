@@ -1,16 +1,10 @@
 #include "nucore/NuFile.h"
-
-class NuFileDevice {
-public:
-    char pad[0x50];
-    char current_directory[256];
-    static NuFileDevice* sm_DefaultDevice;
-};
+#include "nucore/NuFileDevice.h"
 
 int NuFileExtPlatformBit(int platform) {
     return 1 << platform;
 }
 
-char* NuFileGetCurrentDirectory() {
-    return NuFileDevice::sm_DefaultDevice->current_directory;
+NuFileDeviceType NuFileGetCurrentDeviceType() {
+    return NuFileDevice::sm_DefaultDevice->m_type;
 }
