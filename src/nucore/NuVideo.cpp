@@ -1,11 +1,6 @@
 #include "NuVideo.h"
 
-struct NuApi {
-    char pad[0x150c];
-    int m_videoSwapMode;
-};
-
-NuApi nuapi;
+int NuRenderThreadSetup::UserDisplay = 0;
 
 void NuVideoSetBrightnessPS() {}
 
@@ -13,6 +8,6 @@ int NuVideoGetAspectPS() {
     return 1;
 }
 
-int NuVideoGetSwapMode() {
-    return nuapi.m_videoSwapMode;
+void NuVideoSetDisplayType(NUVIDEO_DISPLAY_TYPE type) {
+    NuRenderThreadSetup::UserDisplay = type;
 }
