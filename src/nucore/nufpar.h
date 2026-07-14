@@ -2,6 +2,6 @@
 
 struct nufpar_s {
     void* file;
-    char pad[2348];
-    int wordUnget;
+    char pad[0xAC0];
+    int comcnt;
 };
