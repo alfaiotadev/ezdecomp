@@ -78,8 +78,9 @@ def main():
         sh(["git", "-C", EZ, "add", f])
     if sh(["git", "-C", EZ, "diff", "--cached", "--quiet"]).returncode == 0:
         sys.exit("no net change vs ezdecomp/main (already landed?)")
+    model = os.environ.get("CROWD_MODEL", "kimi-k2-7")
     msg = "Implement " + dm
-    sh(["git", "-C", EZ, "commit", "-q", "-m", msg])
+    sh(["git", "-C", EZ, "commit", "-q", "-m", msg + "\n\nMatched-by: " + model])
     if sh(["git", "-C", EZ, "push", "-q", "-f", "origin", branch]).returncode:
         sys.exit("push failed")
     print("pushed", branch)
@@ -98,7 +99,9 @@ def main():
             break
         time.sleep(2)
     try:
-        gh("PUT", "/repos/%s/pulls/%d/merge" % (REPO, num), tok, {"merge_method": "squash"})
+        gh("PUT", "/repos/%s/pulls/%d/merge" % (REPO, num), tok,
+           {"merge_method": "squash", "commit_title": "%s (#%d)" % (msg, num),
+            "commit_message": "Matched-by: " + model})
         print("MERGED PR #%d%s" % (num, (" (closes #%d)" % a.issue) if a.issue else ""))
     except urllib.error.HTTPError as e:
         print("merge deferred: %d %s (PR left open for review)" % (e.code, e.read().decode()[:150]))

@@ -12,7 +12,7 @@ Pure function of committed repo state (data/lcuswitch_functions.csv + its git hi
 data/symbol_subsystems.json (symbol -> src subsystem dir) is generated in the
 devcontainer with `nm` over build objects (accurate); regenerate occasionally.
 """
-import datetime, json, os, subprocess
+import datetime, json, math, os, re, subprocess
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV = os.path.join(REPO, "data", "lcuswitch_functions.csv")
@@ -117,26 +117,77 @@ def calendar(cum):
     return {"days": days, "total": total, "streak": streak, "max": mx}
 
 
+MODEL_NAMES = {  # commit trailer slug -> display name
+    "kimi-k2-7": "Kimi K2.7", "kimi-k2": "Kimi K2", "swe-1.7": "SWE-1.7",
+    "glm-5.2": "GLM-5.2", "devstral2": "Devstral 2", "claude": "Claude",
+}
+BOT_AUTHORS = {"alfaiotadev", "alfaiotadev-bot"}
+FALLBACK_MODEL = "Kimi K2.7"  # all pre-trailer autonomous landings were Kimi via the Devin CLI
+
+
+GTA_VI = datetime.date(2026, 10, 19)  # the (totally serious) deadline
+
+
+def eta(matched, total, cal, today):
+    """Naive linear finish estimate at the recent match rate, vs the GTA VI date."""
+    days = cal.get("days", [])
+    remaining = total - matched
+    if not days or remaining <= 0:
+        return {"rate": 0, "remaining": remaining}
+    dates = [datetime.date.fromisoformat(d) for d, _ in days]
+    span = (max(dates) - min(dates)).days + 1
+    rate = cal["total"] / span
+    if rate <= 0:
+        return {"rate": 0, "remaining": remaining}
+    eta_days = math.ceil(remaining / rate)
+    eta_date = today + datetime.timedelta(days=eta_days)
+    return {"rate": round(rate, 1), "remaining": remaining, "eta_days": eta_days,
+            "eta_date": eta_date.isoformat(), "eta_year": eta_date.year,
+            "gta_date": GTA_VI.isoformat(), "days_vs_gta": (eta_date - GTA_VI).days}
+
+
 def contributors():
+    """Attribute each function landing (commit "Implement/Complete/Work on ...") to a
+    contributor: an explicit `Matched-by: <slug>` commit trailer (autonomous model) wins;
+    else a bot-authored landing = the autonomous model (Kimi); else the git author (human).
+    Returns [{name, count, kind}] with kind 'model' or 'human', biggest first."""
     try:
-        out = subprocess.run(["git", "-C", REPO, "log", "--no-merges", "--format=%an"],
-                             capture_output=True, text=True).stdout
+        out = subprocess.run(
+            ["git", "-C", REPO, "log", "--no-merges", "--format=%x1e%an%x1f%s%x1f%b"],
+            capture_output=True, text=True).stdout
     except Exception:
         return []
-    counts = {}
-    for name in out.splitlines():
-        name = name.strip()
-        if name:
-            counts[name] = counts.get(name, 0) + 1
-    return [{"name": n, "count": c} for n, c in sorted(counts.items(), key=lambda x: -x[1])[:8]]
+    counts, kind = {}, {}
+    for rec in out.split("\x1e"):
+        if not rec.strip():
+            continue
+        parts = rec.split("\x1f")
+        an = parts[0].strip()
+        subj = parts[1] if len(parts) > 1 else ""
+        body = parts[2] if len(parts) > 2 else ""
+        if not subj.startswith(("Implement ", "Complete ", "Work on ")):
+            continue
+        m = re.search(r"(?im)^Matched-by:\s*(\S+)", body)
+        if m:
+            name = MODEL_NAMES.get(m.group(1).lower(), m.group(1)); k = "model"
+        elif an in BOT_AUTHORS:
+            name = FALLBACK_MODEL; k = "model"
+        else:
+            name = an; k = "human"
+        counts[name] = counts.get(name, 0) + 1
+        kind[name] = k
+    return [{"name": n, "count": c, "kind": kind[n]}
+            for n, c in sorted(counts.items(), key=lambda x: -x[1])[:8]]
 
 
 def main():
     total_n, total_b, o_n, o_b, p_n, families = collect()
     cum = cumulative_by_day()
     stamp = os.environ.get("SOURCE_DATE_EPOCH")
-    generated = (datetime.datetime.fromtimestamp(int(stamp), datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-                 if stamp else "")
+    now = datetime.datetime.fromtimestamp(int(stamp), datetime.timezone.utc) if stamp else None
+    generated = now.strftime("%Y-%m-%d %H:%M UTC") if now else ""
+    today = now.date() if now else max((datetime.date.fromisoformat(d) for d, _ in cum), default=datetime.date(2026, 1, 1))
+    cal = calendar(cum)
     data = {
         "generated": generated,
         "total_n": total_n, "total_b": total_b,
@@ -145,7 +196,8 @@ def main():
         "pct_code": round(o_b / total_b * 100, 2) if total_b else 0,
         "series": [[d, c] for d, c in cum],
         "families": families,
-        "calendar": calendar(cum),
+        "calendar": cal,
+        "eta": eta(o_n, total_n, cal, today),
         "contributors": contributors(),
     }
     out = os.path.join(REPO, "docs", "progress.json")

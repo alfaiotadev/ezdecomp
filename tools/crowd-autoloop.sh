@@ -16,7 +16,7 @@ set -uo pipefail
 REPO="alfaiotadev/ezdecomp"
 WS=/workspace
 DEVIN="$HOME/.local/bin/devin"; command -v "$DEVIN" >/dev/null 2>&1 || DEVIN=devin
-MODEL="${CROWD_MODEL:-kimi-k2-7}"
+MODEL="${CROWD_MODEL:-kimi-k2-7}"; export CROWD_MODEL="$MODEL"  # crowdship tags commits Matched-by: $MODEL
 MAX="${CROWD_MAX:-40}"
 ITER_TIMEOUT="${CROWD_ITER_TIMEOUT:-30m}"
 LOGDIR="${CROWD_LOG_DIR:-$HOME/crowd-loop-logs}"; mkdir -p "$LOGDIR"

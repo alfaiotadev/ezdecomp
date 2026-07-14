@@ -55,6 +55,11 @@
   .contrib .track{flex:1;height:8px;background:var(--track);border-radius:4px;overflow:hidden}
   .contrib .track > i{display:block;height:100%;background:var(--accent);border-radius:4px}
   .contrib .ct{color:var(--muted);flex:0 0 auto;width:70px;text-align:right}
+  .etagrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+  .ebig{font-size:24px;font-weight:700;letter-spacing:-.01em}
+  .etagrid .l{color:var(--muted);font-size:12.5px;margin-top:2px}
+  .everdict{color:var(--text);font-size:15px;background:var(--track);border-radius:10px;padding:13px 16px;line-height:1.45}
+  @media(max-width:560px){.etagrid{grid-template-columns:1fr}}
   .note{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent2);border-radius:10px;padding:14px 18px;color:var(--muted);font-size:14px;margin-bottom:20px}
   footer{color:var(--muted);font-size:13px;margin-top:28px;line-height:1.9}
   footer a{color:var(--accent2);text-decoration:none} footer a:hover{text-decoration:underline}
@@ -92,6 +97,17 @@
     iterate its decomp.me scratch in the browser with any LLM to 100%, open a PR. No game binary needed.
   </div>
 
+  <!-- finish estimate (fun) -->
+  <div class="panel">
+    <h2>Finish estimate — current pace vs 🎮 GTA VI</h2>
+    <div class="etagrid">
+      <div><div class="ebig" id="etarate">—</div><div class="l">functions / day (recent)</div></div>
+      <div><div class="ebig" id="etafin">—</div><div class="l">projected 100% finish</div></div>
+      <div><div class="ebig" id="etagta">—</div><div class="l">vs GTA VI · 19 Oct 2026</div></div>
+    </div>
+    <div class="everdict" id="everdict">—</div>
+  </div>
+
   <!-- contribution calendar -->
   <div class="panel">
     <h2><b id="caltot">—</b> functions matched · <b id="calstreak">—</b>-day streak</h2>
@@ -105,10 +121,11 @@
     <canvas id="chart" height="120"></canvas>
   </div>
 
-  <!-- top contributors -->
+  <!-- contributions by decompiler -->
   <div class="panel">
-    <h2>Top contributors</h2>
-    <div class="contrib" id="contrib"></div>
+    <h2>Contributions by decompiler</h2>
+    <div class="seg" id="cseg"></div>
+    <div class="legend" id="clegend"></div>
   </div>
 
   <footer>
@@ -176,13 +193,26 @@ fetch('progress.json?_=' + Date.now()).then(r => r.json()).then(d => {
                 y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' }, beginAtZero: true } } }
   });
 
-  // top contributors
-  const cs = d.contributors || []; const top = cs.length ? cs[0].count : 1;
-  const pal = ['#3fb950', '#58a6ff', '#a371f7', '#f0883e', '#db61a2', '#e3b341', '#39d353', '#8b949e'];
-  el('contrib').innerHTML = cs.map((c, i) =>
-    `<div class="row"><span class="av" style="background:${pal[i % pal.length]}">${c.name.slice(0,1).toUpperCase()}</span>`
-    + `<span class="nm">${c.name}</span><span class="track"><i style="width:${Math.max(c.count / top * 100, 3)}%"></i></span>`
-    + `<span class="ct">${fmt(c.count)}</span></div>`).join('') || '<div style="color:var(--muted)">No contributors yet.</div>';
+  // finish estimate (fun) vs GTA VI
+  const e = d.eta || {};
+  if (e.rate) {
+    el('etarate').textContent = e.rate;
+    el('etafin').textContent = e.eta_year;
+    const dv = e.days_vs_gta, yrs = Math.abs(dv) / 365;
+    el('etagta').textContent = (dv > 0 ? '+' : '−') + (yrs >= 1 ? yrs.toFixed(1) + ' yr' : Math.abs(dv) + ' d');
+    el('everdict').innerHTML = dv > 0
+      ? `😅 At ~${e.rate} functions/day it takes until about <b>${e.eta_date}</b> to finish the remaining ${fmt(e.remaining)} — roughly <b>${yrs.toFixed(1)} years after</b> GTA VI ships. Better grab an issue and start clicking. 🖱️`
+      : `🚀 On this pace we hit 100% about <b>${Math.round(-dv / 30)} months before</b> GTA VI. See you in Vice City — natively, from source. 🧱`;
+  } else { el('everdict').textContent = 'Not enough history yet to estimate — check back after a few more merges.'; }
+
+  // contributions by decompiler (segmented, like the subsystem bar)
+  const cs = d.contributors || [];
+  const cpal = ['#3fb950', '#58a6ff', '#a371f7', '#f0883e', '#db61a2', '#e3b341'];
+  el('cseg').innerHTML = cs.map((c, i) =>
+    `<span title="${c.name}: ${fmt(c.count)}" style="background:${cpal[i % cpal.length]};flex-grow:${c.count}"></span>`).join('');
+  el('clegend').innerHTML = cs.map((c, i) =>
+    `<div class="it"><div class="lab"><span class="dot" style="background:${cpal[i % cpal.length]}"></span>${c.kind === 'model' ? '🤖' : '👤'} ${c.name}</div>`
+    + `<div class="v">${fmt(c.count)} <small>functions</small></div></div>`).join('') || '<div style="color:var(--muted)">No contributions yet.</div>';
 }).catch(() => { el('pctfn').textContent = '?'; });
 </script>
 </body>
