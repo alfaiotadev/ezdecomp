@@ -1,21 +1,15 @@
 #pragma once
 
-struct NuFileSortKey;
+struct NuSystemTime {
+    unsigned int second;
+    unsigned int minute;
+    unsigned int hour;
+    unsigned int day;
+    unsigned int month;
+    unsigned int year;
 
-enum nufilemode_e {};
-
-class NuFile {
-public:
-    enum TYPE {};
-
-    virtual ~NuFile();
-    virtual void Init();
-    virtual void Closedown();
-    virtual void SetFilename(const char*);
-    virtual void GetPos();
-    virtual void GetSize();
-    virtual void GetOpenFileNames(TYPE, char*, int, char**, int);
-    virtual void GetSortKey(NuFileSortKey&);
+    __attribute__((noinline)) bool operator>(const NuSystemTime& other);
 };
 
-void NuFileGetSortKey(NuFile* const& file, NuFileSortKey& key);
+int NuFileExtPlatformBit(int platform);
+int NuFileTimeIsNewer(NuSystemTime t1, NuSystemTime t2);
