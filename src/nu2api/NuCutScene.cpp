@@ -1,14 +1,11 @@
-#include "numath/types.h"
+#include "nu2api/NuCutScene.h"
 
-struct NuCutSceneRaw;
-struct NuCutSceneRawLocatorSys;
-struct instNUGCUTLOCATOR_s;
-struct NuCutSceneRawLocator;
+struct NuCutSceneVFXFixUpState {
+    long (*fn)(const char*, NuCutSceneRaw*, void*);
+};
 
-extern void (*NuCutSceneSFXUpdate)(NuCutSceneRaw*, NuCutSceneRawLocatorSys*, instNUGCUTLOCATOR_s*,
-                                   NuCutSceneRawLocator*, float, NUMTX*, int);
+__attribute__((visibility("hidden"))) NuCutSceneVFXFixUpState* gNuCutSceneVFXFixUpState;
 
-void NuSetCutSceneSFXUpdateFn(void (*fn)(NuCutSceneRaw*, NuCutSceneRawLocatorSys*, instNUGCUTLOCATOR_s*,
-                                         NuCutSceneRawLocator*, float, NUMTX*, int)) {
-    NuCutSceneSFXUpdate = fn;
+void NuSetCutSceneVFXFixUpFn(long (*fn)(const char*, NuCutSceneRaw*, void*)) {
+    gNuCutSceneVFXFixUpState->fn = fn;
 }
