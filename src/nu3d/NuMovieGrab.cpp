@@ -1,7 +1,12 @@
 #include "nu3d/NuMovieGrab.h"
 
-__attribute__((visibility("hidden"))) numoviegrabinfo_s g_NuMovieGrabInfo;
+struct NuMovieGrabInfo {
+    char pad[0x38];
+    int enabled;
+};
 
-float NuMovieGrabGetStartTimeCfg() {
-    return g_NuMovieGrabInfo.startTimeCfg;
+__attribute__((visibility("hidden"))) NuMovieGrabInfo g_NuMovieGrabInfo;
+
+int NuMovieGrabGetEnabled() {
+    return g_NuMovieGrabInfo.enabled;
 }
