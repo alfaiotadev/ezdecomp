@@ -22,7 +22,8 @@ int NuFntGetScreenHeight(NUFNT*) {
     return 1;
 }
 
-extern float qfnt_height_scale;
-float NuQFntHeightScale() {
-    return qfnt_height_scale;
+extern int theSceneObjectHelperPtr;
+
+int NuQFntGetCoordinateSystem() {
+    return theSceneObjectHelperPtr;
 }
