@@ -1,5 +1,5 @@
-__attribute__((visibility("hidden"))) int* g_lastUsed;
+extern int NuRndrStreamMaxUsed;
 
-int NuRndrStreamGetLastUsed(void) {
-    return *g_lastUsed;
+int NuRndrStreamGetMaxUsed() {
+    return NuRndrStreamMaxUsed;
 }
