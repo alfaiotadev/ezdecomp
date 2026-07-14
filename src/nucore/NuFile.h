@@ -1,4 +1,6 @@
 #pragma once
 
+#include "nucore/NuSystemTime.h"
+
 int NuFileExtPlatformBit(int platform);
-char* NuFileGetCurrentDirectory();
+unsigned int NuFileTimeToTimeStamp(NuSystemTime time);

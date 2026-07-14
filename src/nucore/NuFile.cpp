@@ -1,10 +1,9 @@
 #include "nucore/NuFile.h"
-#include "nucore/NuFileDevice.h"
 
 int NuFileExtPlatformBit(int platform) {
     return 1 << platform;
 }
 
-NuFileDeviceType NuFileGetCurrentDeviceType() {
-    return NuFileDevice::sm_DefaultDevice->m_type;
+__attribute__((disable_tail_calls)) unsigned int NuFileTimeToTimeStamp(NuSystemTime time) {
+    return time.AsAndyDaviesTime();
 }
