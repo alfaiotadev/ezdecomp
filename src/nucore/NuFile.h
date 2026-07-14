@@ -1,15 +1,21 @@
 #pragma once
 
-#include <stddef.h>
+struct NuFileSortKey;
+
+enum nufilemode_e {};
 
 class NuFile {
 public:
+    enum TYPE {};
+
     virtual ~NuFile();
-    virtual long Open(const char* filename, int mode) = 0;
-    virtual long Read(void* buffer, int size, int count) = 0;
-    virtual long Write(const void* buffer, size_t size) = 0;
-    virtual long Seek(long offset, int whence) = 0;
+    virtual void Init();
+    virtual void Closedown();
+    virtual void SetFilename(const char*);
+    virtual void GetPos();
+    virtual void GetSize();
+    virtual void GetOpenFileNames(TYPE, char*, int, char**, int);
+    virtual void GetSortKey(NuFileSortKey&);
 };
 
-int NuFileExtPlatformBit(int platform);
-void NuFileSeek(NuFile* const& file, long offset, int whence);
+void NuFileGetSortKey(NuFile* const& file, NuFileSortKey& key);

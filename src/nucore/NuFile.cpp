@@ -2,11 +2,11 @@
 
 NuFile::~NuFile() {}
 
-void NuFileSeek(NuFile* const& file, long offset, int whence) {
-    if (file == NULL) {
-        return;
+void NuFileGetSortKey(NuFile* const& file, NuFileSortKey& key) {
+    NuFile* f = file;
+    if (f != nullptr) {
+        f->GetSortKey(key);
     }
-    file->Seek(offset, whence);
 }
 
 int NuFileExtPlatformBit(int platform) {
