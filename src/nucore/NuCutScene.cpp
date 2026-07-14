@@ -1,5 +1,7 @@
-#include "nucore/NuCutScene.h"
+struct instNUGCUTSCENE;
 
-void NuSetCutSceneRigidCollisionCheckFn(void (*fn)(NuCutSceneRawRigid*, NUMTX*)) {
-    NuCutSceneRigidCollisionCheck = fn;
+extern void (*NuCutSceneRequestSFX)(instNUGCUTSCENE*);
+
+void NuSetCutSceneRequestSFXFn(void (*fn)(instNUGCUTSCENE*)) {
+    NuCutSceneRequestSFX = fn;
 }
