@@ -1,5 +1,6 @@
 #include "NuVideo.h"
-#include "NuVideoState.h"
+
+extern "C" float nuapi[1524];
 
 void NuVideoSetBrightnessPS() {}
 
@@ -7,7 +8,6 @@ int NuVideoGetAspectPS() {
     return 1;
 }
 
-void NuVideoSetResolution(int width, int height) {
-    nuvideo_settings->width = width;
-    nuvideo_settings->height = height;
+int NuVideoGetNativeFPS() {
+    return (int)nuapi[1350];
 }
