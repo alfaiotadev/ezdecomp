@@ -2,19 +2,29 @@
 
 #include <string.h>
 
-struct NuPvsCellHeader {
-    char pad[16];
-};
-
 struct NuPvsData {
     char pad0[28];
     int xCellCount;
-    char pad1[8];
-    NuPvsCellHeader* cellHeaders;
 };
 
 struct NuPvsZoneBox;
 struct NuPvsCellVolumeUnpacked;
+struct NuPvsCellVolume;
+
+struct NuPvsGlobals {
+    void* unk0;
+    NuPvsCellVolume* activeCellVolume;
+};
+
+struct NuPvsCellVolume {
+    NuPvsData* data;
+    char pad0[32];
+    void* activeZone;
+    char pad1[12];
+    unsigned char flags;
+};
+
+__attribute__((visibility("hidden"))) NuPvsGlobals s_pvs;
 
 int NuPvsGetSizeForBits(unsigned int bits) {
     return (bits >> 3) + 1;
@@ -40,6 +50,6 @@ int NuPvsGetCellIdx(const NuPvsData* data, int i, int j) {
     return data->xCellCount * j + i;
 }
 
-NuPvsCellHeader* NuPvsGetCellHeader(const NuPvsData* data, int i, int j) {
-    return &data->cellHeaders[data->xCellCount * j + i];
+int NuPvsGetActiveCellVolume(void) {
+    return s_pvs.activeCellVolume->flags & 1;
 }
