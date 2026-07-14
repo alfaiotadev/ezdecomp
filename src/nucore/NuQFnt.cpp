@@ -1,6 +1,5 @@
-#include "numath/types.h"
-#include <string.h>
+extern float tWIDESCREEN;
 
-void NuQFntSetMtxRS(void* obj, NUMTX const* mtx) {
-    memcpy(((char*)*(void**)((char*)obj + 0x80)) + 0x10, mtx, sizeof(NUMTX));
+void NuQFntSetWidescreenCompensation(float f) {
+    tWIDESCREEN = f;
 }
