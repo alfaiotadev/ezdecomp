@@ -1,15 +1,14 @@
 #include "nucore/NuFile.h"
 
-int NuFileExtPlatformBit(int platform) {
-    return 1 << platform;
-}
-
 NuFile::~NuFile() {}
 
-long NuFilePos(NuFile* const& file) {
-    NuFile* f = file;
-    if (f == nullptr) {
-        return 0;
+void NuFileSeek(NuFile* const& file, long offset, int whence) {
+    if (file == NULL) {
+        return;
     }
-    return f->GetPos();
+    file->Seek(offset, whence);
+}
+
+int NuFileExtPlatformBit(int platform) {
+    return 1 << platform;
 }
