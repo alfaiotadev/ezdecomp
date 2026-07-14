@@ -1,12 +1,16 @@
-#include "nucore/NuTime.h"
-
-struct nuapi {
-    char _0[0x165C];
-    float forceFrameTime;
+struct NuApi {
+    char pad[5692];
+    float frameTime;
+    char pad2[28];
+    float forcedFrameTime;
+    char pad3[12];
+    int lockFrameTime;
+    bool disableMaxFrameTimeClamping;
+    char pad4[351];
 };
 
-extern struct nuapi nuapi;
+__attribute__((visibility("hidden"))) NuApi* g_pNuApi;
 
-void NuTimeForceFrameTime(float f) {
-    nuapi.forceFrameTime = f;
+void NuTimeLockFrameTime(int lock) {
+    g_pNuApi->lockFrameTime = lock;
 }
